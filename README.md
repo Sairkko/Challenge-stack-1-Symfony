@@ -17,3 +17,27 @@ DATABASE_URL="mysql://root:root@localhost:3306/ChallengeStack"
 
 MAILER_DSN=smtp://localhost:1025
 ```
+
+Dans app et faire les commande suivantes :
+
+```
+npm install
+composer install
+```
+
+Windows :
+
+Se rendre dans app et faire les commandes suivantes :
+
+```
+symfony server-start
+npm run dev
+```
+
+Mac / Linux :
+
+Rester dans Challenge-stack-1-Symfony et faire la commande suivante :
+
+```
+docker compose up
+```
