@@ -1,2 +1,0 @@
-2024/01/16 15:58:17 [crit] 21#21: *1 realpath() "/var/www/app/public" failed (2: No such file or directory), client: 192.168.65.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
-2024/01/16 15:58:18 [crit] 21#21: *1 realpath() "/var/www/app/public" failed (2: No such file or directory), client: 192.168.65.1, server: _, request: "GET /favicon.ico HTTP/1.1", host: "localhost", referrer: "http://localhost/"
