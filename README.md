@@ -1,6 +1,6 @@
 # Challenge-stack-1-Symfony
 
-Ajouter un .env.local :
+Ajouter un .env.local dans la app :
 
 ```
 # DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"
