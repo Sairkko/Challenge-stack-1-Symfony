@@ -2,6 +2,7 @@
 
 Ajouter un .env.local :
 
+```
 # DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"
 
 # bdd MAMP
@@ -15,3 +16,4 @@ DATABASE_URL="mysql://root:root@localhost:3306/ChallengeStack"
 ###< doctrine/doctrine-bundle ###
 
 MAILER_DSN=smtp://localhost:1025
+```
