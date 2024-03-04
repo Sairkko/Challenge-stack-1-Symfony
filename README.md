@@ -30,8 +30,8 @@ Windows :
 Se rendre dans app et faire les commandes suivantes :
 
 ```
-symfony server-start
-npm run dev
+symfony server:start
+npm run dev-server
 ```
 
 Mac / Linux :
