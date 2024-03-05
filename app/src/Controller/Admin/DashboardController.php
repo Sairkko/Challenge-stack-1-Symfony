@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\School;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
@@ -40,6 +41,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToDashboard('Accueil', 'fa fa-home');
 
         yield MenuItem::section('Gestion des formations')->setPermission('');
+        yield MenuItem::linkToCrud('School', 'fas fa-id-card', School::class);
 
         yield MenuItem::section('Gestion des étudiants')->setPermission('');
 
