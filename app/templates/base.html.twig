@@ -1,34 +1,34 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Challenge Stack!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
-        {% block stylesheets %}
-            <link rel="shortcut icon" href="{{ asset('build/favicon.ico') }}" type="image/x-icon">
-            {{ encore_entry_link_tags('app') }}
-        {% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Challenge Stack!{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+    {% block stylesheets %}
+        <link rel="shortcut icon" href="{{ asset('build/favicon.ico') }}" type="image/x-icon">
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
 
-        {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
-        {% endblock %}
-    </head>
-    <body>
-    <nav class="bg-gray-800 text-white p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="#" class="text-xl font-semibold">Logo</a>
-            <div class="flex space-x-4">
-                <a href="#" class="hover:bg-gray-700 p-2 rounded">Accueil</a>
-                <a href="#" class="hover:bg-gray-700 p-2 rounded">A propos</a>
-                <a href="/admin" class="hover:bg-gray-700 p-2 rounded">Admin</a>
-                {% if app.user %}
-                    <a href="/logout" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Déconnexion</a>
-                {% else %}
-                    <a href="/login" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Connexion</a>
-                {% endif %}
-            </div>
+    {% block javascripts %}
+        {{ encore_entry_script_tags('app') }}
+    {% endblock %}
+</head>
+<body>
+<nav class="bg-gray-800 text-white p-4">
+    <div class="container mx-auto flex justify-between items-center">
+        <a href="#" class="text-xl font-semibold">Logo</a>
+        <div class="flex space-x-4">
+            <a href="#" class="hover:bg-gray-700 p-2 rounded">Accueil</a>
+            <a href="#" class="hover:bg-gray-700 p-2 rounded">A propos</a>
+            <a href="/admin" class="hover:bg-gray-700 p-2 rounded">Admin</a>
+            {% if app.user %}
+                <a href="/logout" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Déconnexion</a>
+            {% else %}
+                <a href="/login" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Connexion</a>
+            {% endif %}
         </div>
-    </nav>
-        {% block body %}{% endblock %}
-    </body>
+    </div>
+</nav>
+{% block body %}{% endblock %}
+</body>
 </html>
