@@ -10,6 +10,12 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: TeacherRepository::class)]
 class Teacher
 {
+
+    public function __toString(): string
+        {
+            return $this->name . " " . $this->last_name;
+        }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

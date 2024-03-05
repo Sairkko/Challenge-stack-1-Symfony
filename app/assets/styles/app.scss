@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+[type='submit'] {
+  background-color: #5368d5 !important;
+}
+
+.btn-secondary, .btn-secondary.disabled, .btn-secondary[disabled] {
+  background-color: white !important;
+}
