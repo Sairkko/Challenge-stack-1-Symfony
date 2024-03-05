@@ -3,7 +3,8 @@
 /.env.local
 /.env.local.php
 /.env.*.local
-/app/config/secrets/prod/prod.decrypt.private.php
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
@@ -18,17 +19,15 @@
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
 
-###> symfony/asset-mapper ###
-/app/public/assets/
-/app/assets/vendor
-###< symfony/asset-mapper ###
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+.idea
+###< phpunit/phpunit ###
 
 ###> symfony/webpack-encore-bundle ###
 /node_modules/
 /public/build/
-/public/bundles/
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
-
-.idea
