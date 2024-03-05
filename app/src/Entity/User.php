@@ -33,6 +33,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private $isVerified = false;
 
+    #[ORM\OneToOne(mappedBy: 'id_user', cascade: ['persist', 'remove'])]
+    private ?Teacher $teacher = null;
+
+    #[ORM\OneToOne(mappedBy: 'id_user', cascade: ['persist', 'remove'])]
+    private ?Student $student = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -111,6 +117,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): static
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getTeacher(): ?Teacher
+    {
+        return $this->teacher;
+    }
+
+    public function setTeacher(Teacher $teacher): static
+    {
+        // set the owning side of the relation if necessary
+        if ($teacher->getIdUser() !== $this) {
+            $teacher->setIdUser($this);
+        }
+
+        $this->teacher = $teacher;
+
+        return $this;
+    }
+
+    public function getStudent(): ?Student
+    {
+        return $this->student;
+    }
+
+    public function setStudent(Student $student): static
+    {
+        // set the owning side of the relation if necessary
+        if ($student->getIdUser() !== $this) {
+            $student->setIdUser($this);
+        }
+
+        $this->student = $student;
 
         return $this;
     }
