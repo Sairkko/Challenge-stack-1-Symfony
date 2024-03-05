@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\AskTeacherAccount;
 use App\Entity\Event;
 use App\Entity\Lesson;
 use App\Entity\LessonPermission;
@@ -51,6 +52,7 @@ class DashboardController extends AbstractDashboardController
     {
         yield MenuItem::section('Dashboard')->setPermission('');
         yield MenuItem::linkToDashboard('Accueil', 'fa fa-home');
+        yield MenuItem::linkToCrud('Demande de compte formatteur', 'fas fa-id-card', AskTeacherAccount::class)->setPermission('');
 
         yield MenuItem::section('Gestion des formations')->setPermission('');
 

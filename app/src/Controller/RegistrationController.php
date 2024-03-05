@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -26,49 +28,53 @@ class RegistrationController extends AbstractController
         $this->emailVerifier = $emailVerifier;
     }
 
-    #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    #[Route('/register/{token}', name: 'app_register')]
+    public function register(string $token,Request $request, UserRepository $userRepository, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
     {
-        $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
-        $form->handleRequest($request);
+        if ($token) {
+            $user = $userRepository->findOneBy(['token' => $token]);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // encode the plain password
-            $user->setPassword(
-                $userPasswordHasher->hashPassword(
-                    $user,
-                    $form->get('plainPassword')->getData()
-                )
-            );
+            if (!$user) {
+                throw new \RuntimeException('Aucun User trouver.');
+            }
 
-            $user->setRoles(['ROLE_FORMATTEUR']);
+            $form = $this->createForm(RegistrationFormType::class, $user);
+            $form->handleRequest($request);
 
-            $teacher = new Teacher();
-            $teacher->setIdUser($user);
+            if ($form->isSubmitted() && $form->isValid()) {
+                // encode the plain password
+                $user->setPassword(
+                    $userPasswordHasher->hashPassword(
+                        $user,
+                        $form->get('plainPassword')->getData()
+                    )
+                );
 
-            $teacher->setName($form->get('name')->getData());
-            $teacher->setLastName($form->get('lastname')->getData());
+                $user->setToken('');
 
-            $entityManager->persist($user);
-            $entityManager->persist($teacher);
-            $entityManager->flush();
+                if (in_array('ROLE_TEACHER', $user->getRoles())) {
+                    $newAccount = new Teacher();
 
-            $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
-                (new TemplatedEmail())
-                    ->from(new Address('test@esgi.com', 'ChallengeStack'))
-                    ->to($user->getEmail())
-                    ->subject('Please Confirm your Email')
-                    ->htmlTemplate('registration/confirmation_email.html.twig')
-            );
-            // do anything else you need here, like send an email
+                } else {
+                    $newAccount = new Student();
 
-            return $this->redirectToRoute('app_homepage');
+                }
+                $newAccount->setIdUser($user);
+                $newAccount->setName($form->get('name')->getData());
+                $newAccount->setLastName($form->get('lastname')->getData());
+
+                $entityManager->persist($user);
+                $entityManager->persist($newAccount);
+                $entityManager->flush();
+
+                return $this->redirectToRoute('app_homepage');
+            }
+
+            return $this->render('registration/register.html.twig', [
+                'registrationForm' => $form->createView(),
+            ]);
         }
-
-        return $this->render('registration/register.html.twig', [
-            'registrationForm' => $form->createView(),
-        ]);
+        return throw new \RuntimeException('Aucun token.');
     }
 
     #[Route('/verify/email', name: 'app_verify_email')]
