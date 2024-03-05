@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Teacher;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Security\EmailVerifier;
@@ -43,7 +44,14 @@ class RegistrationController extends AbstractController
 
             $user->setRoles(['ROLE_FORMATTEUR']);
 
+            $teacher = new Teacher();
+            $teacher->setIdUser($user);
+
+            $teacher->setName($form->get('name')->getData());
+            $teacher->setLastName($form->get('lastname')->getData());
+
             $entityManager->persist($user);
+            $entityManager->persist($teacher);
             $entityManager->flush();
 
             $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
