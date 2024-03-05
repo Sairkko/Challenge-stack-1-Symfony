@@ -3,7 +3,7 @@
 {% block title %}Register{% endblock %}
 
 {% block body %}
-    <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-md">
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Register</h2>
             {% for flash_error in app.flashes('verify_email_error') %}
@@ -21,13 +21,23 @@
                 </div>
 
                 <div>
-                    {{ form_label(registrationForm.plainPassword, 'Password', {'attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                    {{ form_label(registrationForm.name, 'Prénom', {'attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                    {{ form_widget(registrationForm.name, {'attr': {'class': 'mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2'}}) }}
+                </div>
+
+                <div>
+                    {{ form_label(registrationForm.lastname, 'Nom', {'attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                    {{ form_widget(registrationForm.lastname, {'attr': {'class': 'mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2'}}) }}
+                </div>
+
+                <div>
+                    {{ form_label(registrationForm.plainPassword, 'Mot de passe', {'attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
                     {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2'}}) }}
                 </div>
 
                 <div>
                     {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'h-4 w-4 text-indigo-500 focus:ring-indigo-500 border-gray-300 rounded'}}) }}
-                    {{ form_label(registrationForm.agreeTerms, 'I agree to the terms and conditions', {'attr': {'class': 'ml-2 block text-sm text-gray-900'}}) }}
+                    {{ form_label(registrationForm.agreeTerms, "J'accepte les conditions", {'attr': {'class': 'ml-2 block text-sm text-gray-900'}}) }}
                 </div>
 
                 <div>
