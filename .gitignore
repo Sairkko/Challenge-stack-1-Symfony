@@ -1,4 +1,2 @@
 .idea
 .DS_STORE
-/infra/volumes/dev/logs
-docker-compose.yml
