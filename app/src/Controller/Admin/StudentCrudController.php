@@ -3,10 +3,15 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Student;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 
 class StudentCrudController extends AbstractCrudController
 {
@@ -15,14 +20,19 @@ class StudentCrudController extends AbstractCrudController
         return Student::class;
     }
 
-    /*
-    public function configureFields(string $pageName): iterable
+    public function configureActions(Actions $actions): Actions
     {
-        return [
-            IdField::new('id'),
-            TextField::new('title'),
-            TextEditorField::new('description'),
-        ];
+        $customCreate = Action::new('customCreate', 'Créer', 'fa fa-plus')
+            ->linkToUrl($this->getCustomCreateUrl())
+            ->createAsGlobalAction();
+
+        return $actions
+            ->add(Crud::PAGE_INDEX, $customCreate)
+            ->remove(Crud::PAGE_INDEX, Action::NEW);
     }
-    */
+
+    private function getCustomCreateUrl(): string
+    {
+        return $this->generateUrl('app_registration_student');
+    }
 }
