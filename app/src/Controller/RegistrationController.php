@@ -6,6 +6,7 @@ use App\Entity\Student;
 use App\Entity\Teacher;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Repository\StudentRepository;
 use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,7 +30,7 @@ class RegistrationController extends AbstractController
     }
 
     #[Route('/register/{token}', name: 'app_register')]
-    public function register(string $token,Request $request, UserRepository $userRepository, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    public function register(string $token,Request $request, UserRepository $userRepository, StudentRepository $studentRepository, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
     {
         if ($token) {
             $user = $userRepository->findOneBy(['token' => $token]);
@@ -56,8 +57,8 @@ class RegistrationController extends AbstractController
                     $newAccount = new Teacher();
 
                 } else {
-                    $newAccount = new Student();
-
+                    $studentActuel = $studentRepository->findOneBy(['id_user' => $user->getId()]);
+                    $newAccount = $studentActuel;
                 }
                 $newAccount->setIdUser($user);
                 $newAccount->setName($form->get('name')->getData());

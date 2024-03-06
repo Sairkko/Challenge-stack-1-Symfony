@@ -21,7 +21,7 @@ class StudentGroup
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\OneToMany(mappedBy: 'id_student_groupe', targetEntity: Student::class)]
+    #[ORM\ManyToMany(targetEntity: Student::class, mappedBy: 'student_groupe')]
     private Collection $students;
 
     public function __construct()
@@ -88,7 +88,7 @@ class StudentGroup
     {
         if (!$this->students->contains($student)) {
             $this->students->add($student);
-            $student->setIdStudentGroupe($this);
+            $student->addStudentGroupe($this);
         }
 
         return $this;
@@ -97,10 +97,7 @@ class StudentGroup
     public function removeStudent(Student $student): static
     {
         if ($this->students->removeElement($student)) {
-            // set the owning side to null (unless already changed)
-            if ($student->getIdStudentGroupe() === $this) {
-                $student->setIdStudentGroupe(null);
-            }
+            $student->removeStudentGroupe($this);
         }
 
         return $this;

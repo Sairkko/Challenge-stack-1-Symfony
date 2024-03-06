@@ -20,25 +20,19 @@ class StudentCrudController extends AbstractCrudController
         return Student::class;
     }
 
-    public function configureFields(string $pageName): iterable
-    {
-        return [
-
-            EmailField::new('id_user', 'Email'),
-
-            AssociationField::new('id_student_groupe', 'Classes')
-                ->setFormTypeOptions([
-                    'by_reference' => false,
-                    'multiple' => true,
-                ]),
-
-        ];
-    }
-
     public function configureActions(Actions $actions): Actions
     {
+        $customCreate = Action::new('customCreate', 'Créer', 'fa fa-plus')
+            ->linkToUrl($this->getCustomCreateUrl())
+            ->createAsGlobalAction();
+
         return $actions
-            ->remove(Crud::PAGE_INDEX, Action::NEW)
-            ;
+            ->add(Crud::PAGE_INDEX, $customCreate)
+            ->remove(Crud::PAGE_INDEX, Action::NEW);
+    }
+
+    private function getCustomCreateUrl(): string
+    {
+        return $this->generateUrl('app_registration_student');
     }
 }
