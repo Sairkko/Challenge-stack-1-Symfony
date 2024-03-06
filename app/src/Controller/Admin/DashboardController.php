@@ -15,6 +15,7 @@ use App\Entity\StudentReponse;
 use App\Entity\Teacher;
 use App\Entity\Test;
 use App\Entity\User;
+use App\Repository\EventRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
@@ -26,12 +27,31 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class DashboardController extends AbstractDashboardController
 {
+    private $eventRepository;
+
+    public function __construct(EventRepository $monRepository)
+    {
+        $this->eventRepository = $monRepository;
+    }
+
     #[Route('/admin', name: 'admin')]
 
     public function index(): Response
     {
-        return $this->render('admin/dashboard.html.twig', [
-        ]);
+        $events = $this->eventRepository->findAll();
+        $evenements = [];
+        foreach($events as $event){
+            $evenements[] = [
+                'id' => $event->getId(),
+                'start' => $event->getStartDatetime()->format('Y-m-d H:i:s'),
+                'end' => $event->getEndDatetime()->format('Y-m-d H:i:s'),
+                'title' => $event->getTitle(),
+                'description' => $event->getDescription(),
+            ];
+        }
+        $data = json_encode($evenements);
+        
+        return $this->render('admin/dashboard.html.twig', compact('data'));
     }
 
     public function configureAssets(): Assets
