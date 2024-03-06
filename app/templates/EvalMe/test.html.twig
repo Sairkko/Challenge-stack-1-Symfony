@@ -1,0 +1,278 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Test{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Script pour gérer l'ouverture et la fermeture de la modale
+            const modal = document.getElementById('myModal');
+            const btn = document.getElementById('openModalBtn');
+            const span = document.getElementsByClassName('closeBtn')[0];
+
+            const editModal = document.getElementById('editModal'); // Assurez-vous que l'ID correspond à votre modale d'édition
+            const editSpan = document.getElementsByClassName('editCloseBtn')[0]; // Utilisez une classe unique pour le bouton de fermeture de la modale d'édition
+
+            if (editSpan) {
+                editSpan.onclick = function() {
+                    editModal.style.display = 'none';
+                }
+            }
+
+            if (btn) {
+                btn.onclick = function() {
+                    modal.style.display = 'block';
+                }
+            }
+
+            if (span) {
+                span.onclick = function() {
+                    modal.style.display = 'none';
+                }
+            }
+
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            // Gestion des champs conditionnels basés sur le type de question
+            const questionTypeSelect = document.getElementById('questionType');
+            const conditionalFieldsContainer = document.getElementById('conditionalFields');
+
+            if (questionTypeSelect) {
+                const updateConditionalFields = () => {
+                    const type = questionTypeSelect.value;
+                    let fieldsHtml = '';
+
+                    switch (type) {
+                        case 'qcm':
+                            fieldsHtml = `
+                    <label>Choix (cochez toutes les réponses correctes) :</label>
+                    <div class="flex items-center mb-2 p-2"><input type="checkbox" name="answers1" value="A" class="mr-2"> A <input type="text" name="responseA" class="ml-2 rounded border-gray-300 p-2 border" placeholder="Réponse A"></div>
+                    <div class="flex items-center mb-2 p-2"><input type="checkbox" name="answers2" value="B" class="mr-2"> B <input type="text" name="responseB" class="ml-2 rounded border-gray-300 p-2 border" placeholder="Réponse B"></div>
+                    <div class="flex items-center mb-2 p-2"><input type="checkbox" name="answers3" value="C" class="mr-2"> C <input type="text" name="responseC" class="ml-2 rounded border-gray-300 p-2 border" placeholder="Réponse C"></div>
+                    <div class="flex items-center mb-2 p-2"><input type="checkbox" name="answers4" value="D" class="mr-2"> D <input type="text" name="responseD" class="ml-2 rounded border-gray-300 p-2 border" placeholder="Réponse D"></div>
+                    `;
+                            break;
+                        case 'unique_choice':
+                            fieldsHtml = `
+                    <label>Choisissez la bonne réponse :</label>
+                    <div class="flex items-center mb-2 p-2"><input type="radio" name="answer1" value="A" class="mr-2"> A <input type="text" name="responseA" class="ml-2 rounded border-gray-300 p-2 border" placeholder="Réponse A"></div>
+                    <div class="flex items-center mb-2 p-2"><input type="radio" name="answer2" value="B" class="mr-2"> B <input type="text" name="responseB" class="ml-2 rounded border-gray-300 p-2 border" placeholder="Réponse B"></div>
+                    <div class="flex items-center mb-2 p-2"><input type="radio" name="answer3" value="C" class="mr-2"> C <input type="text" name="responseC" class="ml-2 rounded border-gray-300 p-2 border" placeholder="Réponse C"></div>
+                    <div class="flex items-center mb-2 p-2"><input type="radio" name="answer4" value="D" class="mr-2"> D <input type="text" name="responseD" class="ml-2 rounded border-gray-300 p-2 border" placeholder="Réponse D"></div>
+                    `;
+                            break;
+                        case 'null':
+                            fieldsHtml = `
+                    <label for="openAnswer">Réponse :</label>
+                    <textarea id="openAnswer" name="openAnswer" class="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+                    `;
+                            break;
+                    }
+
+                    conditionalFieldsContainer.innerHTML = fieldsHtml;
+                };
+
+                questionTypeSelect.addEventListener('change', updateConditionalFields);
+                // Appel initial pour configurer les champs conditionnels au chargement de la page
+                updateConditionalFields();
+            }
+        });
+
+        function openEditModal(questionId, questionText, questionPoint, questionType, baseUrl) {
+            // Remplir les champs du formulaire dans la modale
+            document.getElementById('edit_questionId').value = questionId;
+            document.getElementById('edit_questionText').value = questionText;
+            document.getElementById('edit_questionPoint').value = questionPoint;
+            document.getElementById('edit_questionType').value = questionType;
+
+            // Mettre à jour le formulaire et les champs conditionnels
+            changeQuestionType(questionType);
+
+            // Construire l'URL complète pour l'action du formulaire
+            let editUrl = baseUrl.replace(':id', questionId);
+            document.getElementById('editForm').action = editUrl;
+
+            // Afficher la modale
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function changeQuestionType(questionType) {
+            let selectedType = questionType;
+            let conditionalFields = document.getElementById('edit_conditionalFields');
+
+            // Effacez les champs conditionnels existants
+            conditionalFields.innerHTML = '';
+
+            // Générer les champs en fonction du type de question sélectionné
+            if (selectedType === 'QCM' || selectedType === 'UNIQUE_CHOICE') {
+                // Ajoutez vos inputs pour les réponses (exemple simple)
+                for (let i = 1; i <= 4; i++) { // Générer 4 réponses pour l'exemple
+                    conditionalFields.innerHTML += `<label class="block text-gray-700">Réponse ${i}: <input type="text" name="response_${i}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></label>`;
+                    if (selectedType === 'qcm') {
+                        conditionalFields.innerHTML += `<input type="checkbox" name="correct_${i}"> Correct<br/>`;
+                    } else {
+                        conditionalFields.innerHTML += `<input type="radio" name="correct" value="${i}"> Correct<br/>`;
+                    }
+                }
+            } else if (selectedType === 'OPEN_QUESTION') {
+                // Ajoutez votre textarea pour une question ouverte
+                conditionalFields.innerHTML += '<label class="block text-gray-700">Réponse: <textarea name="open_response" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea></label>';
+            }
+        }
+    </script>
+{% endblock %}
+
+
+{% block body %}
+    <div class="bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+            <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Test</h2>
+            <!-- Bouton pour ouvrir la modale -->
+            <button id="openModalBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-2 mx-auto">
+                Créer vos questions
+            </button>
+        </div>
+
+        <div class="mt-8 sm:mx-auto sm:w-full">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Titre: {{ title }}</h3>
+                <h3 class="mt-2 text-sm text-gray-600">Description: {{ description }}</h3>
+                <!-- Conteneur de grille pour les questions -->
+                <div class="mt-6 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 gap-4">
+                    {% for question in questions %}
+                        <div class="p-5 bg-white rounded-lg shadow-lg">
+                                <!-- Votre code existant pour afficher la question -->
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Question: {{ question.questionText }}</h4>
+                            <ul class="list-none">
+                                {% if question.type.name == 'QCM' or question.type.name == 'UNIQUE_CHOICE' %}
+                                    {% for reponse in question.questionReponses %}
+                                        <li class="mb-1">
+                                            <label class="inline-flex items-center">
+                                                {% if question.type.name == 'UNIQUE_CHOICE' %}
+                                                    <input disabled type="radio" class="form-radio h-5 w-5 text-red-600" id="response_{{ reponse.id }}" name="question_{{ question.id }}" {% if reponse.isCorrect %}checked{% endif %}>
+                                                {% elseif question.type.name == 'QCM' %}
+                                                    <input disabled type="checkbox" class="form-checkbox h-5 w-5 text-red-600" id="response_{{ reponse.id }}" name="response_{{ reponse.id }}" {% if reponse.isCorrect %}checked{% endif %}>
+                                                {% endif %}
+                                                <span class="ml-2 text-gray-700">{{ reponse.text }}</span>
+                                            </label>
+                                        </li>
+                                    {% endfor %}
+                                {% elseif question.type.name == 'OPEN_QUESTION' %}
+                                    {% for reponse in question.questionReponses %}
+                                        <li class="mb-1">
+                                            <label for="open_response_{{ question.id }}" class="block text-gray-700">Réponse:</label>
+                                            <textarea disabled id="open_response_{{ question.id }}" name="open_response_{{ question.id }}" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 border">{{ reponse.text }}</textarea>
+                                        </li>
+                                    {% endfor %}
+                                {% endif %}
+                                <li class="mt-2 text-sm font-medium">Point: {{ question.point }}</li>
+                            </ul>
+                            <div class="flex items-center">
+                                <form action="{{ path('delete_question', {'id': question.id}) }}" method="post" class="mr-2">
+                                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                    <input type="hidden" name="testId" value="{{ id }}">
+                                </form>
+                                <button onclick="openEditModal({{ question.id }}, '{{ question.questionText | escape('js') }}', '{{ question.point }}', '{{ question.type.name }}', '{{ path('edit_question', {'id': question.id}) }}')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">
+                                    <i class="fa-solid fa-edit"></i>
+                                </button>
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- La modale -->
+    <div id="myModal" class="modal hidden fixed z-10 inset-0 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="modal-content bg-white w-full max-w-lg p-5 rounded-lg shadow-lg">
+                <div class="text-right">
+                    <button class="closeBtn text-gray-400 hover:text-gray-600">
+                        <span class="text-2xl">&times;</span>
+                    </button>
+                </div>
+                <h2 class="text-xl font-semibold mb-4">Créer une nouvelle question</h2>
+                <form id="createQuestionForm" action="{{ path('submit_question') }}" method="post">
+                <!-- question_text -->
+                    <div class="mb-4">
+                        <label for="questionTitle" class="block text-sm font-medium text-gray-700">Titre de la question: <span class="text-red-500">*</span></label>
+                        <input type="text" id="questionTitle" name="questionTitle" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="questionType" class="block text-sm font-medium text-gray-700">Type de question:</label>
+                        <select id="questionType" name="questionType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2" required>
+                            <option disabled selected value="">Veuillez choisir un type de question</option>
+                            <option value="qcm">Question choix multiple</option>
+                            <option value="unique_choice">Question choix unique</option>
+                            <option value="null">Question ouverte</option>
+                        </select>
+                    </div>
+
+                    <!-- Conditional Fields will be inserted here -->
+                    <div id="conditionalFields"></div>
+
+                    <!-- Points -->
+                    <div class="mb-4">
+                        <label for="points" class="block text-sm font-medium text-gray-700">Points: <span class="text-red-500">*</span></label>
+                        <input type="number" id="points" name="points" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2" required>
+                    </div>
+
+                    <input type="hidden" name="testId" value="{{ id }}">
+
+                    <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-700 rounded text-white font-bold">Créer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour édition -->
+    <div id="editModal" class="modal hidden fixed z-10 inset-0 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="modal-content bg-white w-full max-w-lg p-5 rounded-lg shadow-lg">
+                <div class="text-right">
+                    <button class="editCloseBtn text-gray-400 hover:text-gray-600">
+                        <span class="text-2xl">&times;</span>
+                    </button>
+                </div>
+                <h2 class="text-xl font-semibold mb-4">Modifier la question</h2>
+                <form id="editForm" action="" method="post">
+                    <div class="mb-4">
+                        <label for="edit_questionText" class="block text-sm font-medium text-gray-700">Titre de la question: <span class="text-red-500">*</span></label>
+                        <input type="text" id="edit_questionText" name="questionText" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="edit_questionType" class="block text-sm font-medium text-gray-700">Type de question:</label>
+                        <select id="edit_questionType" name="questionType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2" required onchange="changeQuestionType()">
+                            <option disabled value="QCM">Question choix multiple</option>
+                            <option disabled value="UNIQUE_CHOICE">Question choix unique</option>
+                            <option disabled value="OPEN_QUESTION">Question ouverte</option>
+                        </select>
+                    </div>
+                    <div id="edit_conditionalFields"></div>
+                    <!-- Ajoutez d'autres champs de formulaire selon vos besoins -->
+                    <div class="mb-4">
+                        <label for="edit_questionPoint" class="block text-sm font-medium text-gray-700">Points: <span class="text-red-500">*</span></label>
+                        <input type="number" id="edit_questionPoint" name="questionPoint" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2" required>
+                    </div>
+
+                    <input type="hidden" id="edit_questionId" name="questionId">
+
+                    <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-700 rounded text-white font-bold">Enregistrer les modifications</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

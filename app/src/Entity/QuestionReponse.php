@@ -20,6 +20,9 @@ class QuestionReponse
     #[ORM\Column(length: 255)]
     private ?string $text = null;
 
+    #[ORM\Column]
+    private ?bool $is_correct = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -45,6 +48,18 @@ class QuestionReponse
     public function setText(string $text): static
     {
         $this->text = $text;
+
+        return $this;
+    }
+
+    public function isIsCorrect(): ?bool
+    {
+        return $this->is_correct;
+    }
+
+    public function setIsCorrect(bool $is_correct): static
+    {
+        $this->is_correct = $is_correct;
 
         return $this;
     }
