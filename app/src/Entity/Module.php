@@ -25,6 +25,11 @@ class Module
     #[ORM\OneToMany(mappedBy: 'id_module', targetEntity: Lesson::class)]
     private Collection $lessons;
 
+    public function __toString(): string
+    {
+        return $this->name;
+    }
+
     public function __construct()
     {
         $this->lessons = new ArrayCollection();
