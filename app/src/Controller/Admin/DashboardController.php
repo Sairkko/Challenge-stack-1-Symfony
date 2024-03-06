@@ -22,6 +22,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -29,17 +30,25 @@ use Symfony\Component\Routing\Annotation\Route;
 class DashboardController extends AbstractDashboardController
 {
     private $eventRepository;
+    private $security;
 
-    public function __construct(EventRepository $monRepository)
+    public function __construct(EventRepository $monRepository, Security $security)
     {
         $this->eventRepository = $monRepository;
+        $this->security = $security;
     }
 
     #[Route('/admin', name: 'admin')]
 
     public function index(): Response
     {
-        $events = $this->eventRepository->findAll();
+        $user = $this->security->getUser();
+        if ($user && $user->getTeacher() instanceof Teacher){
+            $events = $this->eventRepository->findByTeacher($user->getTeacher());
+        }else{
+            $events = [];
+        }
+        // $events = $this->eventRepository->findAll(); Si l'utilisateur est admin
         $evenements = [];
         foreach($events as $event){
             $evenements[] = [

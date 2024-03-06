@@ -17,10 +17,19 @@
                 initialView: 'dayGridMonth',
                 allDaySlot: false,
                 timeZone: 'Europe/Paris',
+                customButtons: {
+                    addButton: {
+                        color: "#00A759",
+                        text: 'Evenement +',
+                        click: function() {
+                            window.location.href = '/admin?crudAction=new&crudControllerFqcn=App%5CController%5CAdmin%5CEventCrudController';
+                        }
+                    }
+                },
                 headerToolbar: {
                     left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                    center: 'title addButton',
+                    right: 'dayGridMonth,timeGridWeek'
                 },
                 events: {{data|raw}}
             });
