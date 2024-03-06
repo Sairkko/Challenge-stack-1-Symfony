@@ -37,12 +37,16 @@ class Teacher
     #[ORM\OneToMany(mappedBy: 'id_teacher', targetEntity: Test::class)]
     private Collection $tests;
 
+    #[ORM\OneToMany(mappedBy: 'id_teacher', targetEntity: Student::class)]
+    private Collection $students;
+
     public function __construct()
     {
         $this->events = new ArrayCollection();
         $this->modules = new ArrayCollection();
         $this->lessons = new ArrayCollection();
         $this->tests = new ArrayCollection();
+        $this->students = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -200,6 +204,36 @@ class Teacher
             // set the owning side to null (unless already changed)
             if ($test->getIdTeacher() === $this) {
                 $test->setIdTeacher(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Student>
+     */
+    public function getStudents(): Collection
+    {
+        return $this->students;
+    }
+
+    public function addStudent(Student $student): static
+    {
+        if (!$this->students->contains($student)) {
+            $this->students->add($student);
+            $student->setIdTeacher($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStudent(Student $student): static
+    {
+        if ($this->students->removeElement($student)) {
+            // set the owning side to null (unless already changed)
+            if ($student->getIdTeacher() === $this) {
+                $student->setIdTeacher(null);
             }
         }
 

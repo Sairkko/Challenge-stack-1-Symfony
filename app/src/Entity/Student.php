@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\StudentRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StudentRepository::class)]
@@ -29,6 +30,12 @@ class Student
 
     #[ORM\OneToOne(mappedBy: 'id_student', cascade: ['persist', 'remove'])]
     private ?StudentReponse $studentReponse = null;
+
+    #[ORM\ManyToOne(inversedBy: 'students')]
+    private ?Teacher $id_teacher = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $profil_picture = null;
 
     public function getId(): ?int
     {
@@ -96,6 +103,30 @@ class Student
         }
 
         $this->studentReponse = $studentReponse;
+
+        return $this;
+    }
+
+    public function getIdTeacher(): ?Teacher
+    {
+        return $this->id_teacher;
+    }
+
+    public function setIdTeacher(?Teacher $id_teacher): static
+    {
+        $this->id_teacher = $id_teacher;
+
+        return $this;
+    }
+
+    public function getProfilPicture(): ?string
+    {
+        return $this->profil_picture;
+    }
+
+    public function setProfilPicture(?string $profil_picture): static
+    {
+        $this->profil_picture = $profil_picture;
 
         return $this;
     }
