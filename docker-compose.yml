@@ -19,7 +19,7 @@ services:
       PMA_USER: esgi
       PMA_PASSWORD: password
     ports:
-      - "8080:80"
+      - "8081:80"
 
   mailcatcher:
     restart: on-failure
