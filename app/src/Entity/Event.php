@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\EventRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -32,6 +34,14 @@ class Event
 
     #[ORM\Column(length: 255)]
     private ?string $color = null;
+
+    #[ORM\ManyToMany(targetEntity: StudentGroup::class, inversedBy: 'events')]
+    private Collection $groups;
+
+    public function __construct()
+    {
+        $this->groups = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -106,6 +116,30 @@ class Event
     public function setColor(string $color): static
     {
         $this->color = $color;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StudentGroup>
+     */
+    public function getGroups(): Collection
+    {
+        return $this->groups;
+    }
+
+    public function addGroup(StudentGroup $group): static
+    {
+        if (!$this->groups->contains($group)) {
+            $this->groups->add($group);
+        }
+
+        return $this;
+    }
+
+    public function removeGroup(StudentGroup $group): static
+    {
+        $this->groups->removeElement($group);
 
         return $this;
     }

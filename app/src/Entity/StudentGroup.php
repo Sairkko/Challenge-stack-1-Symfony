@@ -21,13 +21,22 @@ class StudentGroup
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\OneToMany(mappedBy: 'id_student_groupe', targetEntity: Student::class)]
+    #[ORM\ManyToMany(targetEntity: Student::class, mappedBy: 'student_groupe')]
     private Collection $students;
+
+    #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'groups')]
+    private Collection $events;
 
     public function __construct()
     {
         $this->id_school = new ArrayCollection();
         $this->students = new ArrayCollection();
+        $this->events = new ArrayCollection();
+    }
+
+    public function __toString(): string
+    {
+        return $this->name;
     }
 
     public function getId(): ?int
@@ -83,7 +92,7 @@ class StudentGroup
     {
         if (!$this->students->contains($student)) {
             $this->students->add($student);
-            $student->setIdStudentGroupe($this);
+            $student->addStudentGroupe($this);
         }
 
         return $this;
@@ -92,12 +101,38 @@ class StudentGroup
     public function removeStudent(Student $student): static
     {
         if ($this->students->removeElement($student)) {
-            // set the owning side to null (unless already changed)
-            if ($student->getIdStudentGroupe() === $this) {
-                $student->setIdStudentGroupe(null);
-            }
+            $student->removeStudentGroupe($this);
         }
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): static
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->addGroup($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): static
+    {
+        if ($this->events->removeElement($event)) {
+            $event->removeGroup($this);
+        }
+
+        return $this;
+    }
+
+
 }

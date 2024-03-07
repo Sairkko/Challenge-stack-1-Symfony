@@ -94,4 +94,5 @@ class Module
 
         return $this;
     }
+
 }

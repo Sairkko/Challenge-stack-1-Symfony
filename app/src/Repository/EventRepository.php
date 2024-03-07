@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Event;
+use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -45,4 +46,16 @@ class EventRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+        /**
+         * @return Event[]
+        */
+        public function findByTeacher(Teacher $teacher)
+        {
+            return $this->createQueryBuilder('e')
+                ->andWhere('e.id_teacher = :teacher')
+                ->setParameter('teacher', $teacher->getId())
+                ->getQuery()
+                ->getResult();
+        }
 }

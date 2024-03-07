@@ -33,6 +33,9 @@ class Lesson
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $content = null;
 
+    #[ORM\Column(type: "string", nullable: true)]
+    private ?string $file = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -109,4 +112,17 @@ class Lesson
 
         return $this;
     }
+
+    public function getFile(): ?string
+    {
+        return $this->file;
+    }
+
+    public function setFile(?string $file): static
+    {
+        $this->file = $file;
+
+        return $this;
+    }
+
 }
