@@ -92,8 +92,11 @@ class TestCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $customAction = Action::new('customAction', 'Affichage Personnalisé')
+        $customAction = Action::new('customAction', 'Voir les questions')
             ->linkToCrudAction('myCustomAction'); // Nom de la méthode dans ce contrôleur
+
+        $customAction2 = Action::new('customAction2', 'Voir les réponses')
+            ->linkToCrudAction('getResponseAction'); // Nom de la méthode dans ce contrôleur
 
 
         if (!$this->authorizationChecker->isGranted('ROLE_TEACHER')) {
@@ -106,14 +109,37 @@ class TestCrudController extends AbstractCrudController
 
 
         return $actions
+            ->add(Crud::PAGE_INDEX, $customAction2)
             ->add(Crud::PAGE_INDEX, $customAction);
+            
     }
 
     public function myCustomAction(AdminContext $context)
     {
         $testId = $context->getEntity()->getInstance()->getId();
-        // Assurez-vous que 'some_route' est le nom de la route de votre nouveau contrôleur Symfony
         return $this->redirect($this->generateUrl('some_route', ['id' => $testId]));
+    }
+
+
+    public function getResponseAction(AdminContext $context)
+    {
+        $testId = $context->getEntity()->getInstance()->getId();
+        return $this->redirect($this->generateUrl('answers_page', ['id' => $testId]));
+    }
+    
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle(Crud::PAGE_INDEX, 'Quizz')
+            ->setPageTitle(Crud::PAGE_NEW, 'Créer');
+    }
+
+    public function configureAction(Actions $actions): Actions
+    {
+        return $actions
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action->setLabel('Créer');
+            });
     }
 
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder

@@ -55,8 +55,8 @@ class EventCrudController extends AbstractCrudController
                 ->setRequired(true),
             DateTimeField::new('end_datetime', 'Date fin')
                 ->setRequired(true),
-            TextField::new('color')
-                ->setRequired(true)
+            TextField::new('color', 'Couleur')
+                ->setRequired(false)
                 ->onlyOnForms(),
         ];
     }

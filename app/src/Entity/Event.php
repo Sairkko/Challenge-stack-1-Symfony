@@ -32,7 +32,7 @@ class Event
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $end_datetime = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(nullable: true, length: 255)]
     private ?string $color = null;
 
     #[ORM\ManyToMany(targetEntity: StudentGroup::class, inversedBy: 'events')]

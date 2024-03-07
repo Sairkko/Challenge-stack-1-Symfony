@@ -33,7 +33,7 @@ class CustomRedirectController extends AbstractController
         ]);
     }
 
-    #[Route('/test/answers/{id}', name: 'answers_page')]
+    #[Route('/custom-view/answers{id}', name: 'response_page')]
     public function answers(int $id, TestRepository $testRepository): Response
     {
         // Récupérez des données supplémentaires si nécessaire
@@ -47,32 +47,12 @@ class CustomRedirectController extends AbstractController
         $description = $test->getDescription();
 
         $questions = $test->getQuestions();
-        $groups = $test->getGroups();
-        $students = [];
-        foreach($groups as $group){
-            foreach($group->getStudents() as $student){
-                $allStudentsReponses = $student->getStudentReponses();
-                $thisTestReponses = array_filter($allStudentsReponses, function($reponse) use ($questions) {
-                    return in_array($reponse->getQuestion(), $questions);
-                $students[] = [
-                    'id' => $student->getId(),
-                    'nom' => $student->getName(),
-                    'prenom' => $student->getLastName(),
-                    'picture' => $student->getIdUser()->getProfilPicture(),
-                    'reponses' => count($thisTestReponses)
-                ];
-            }
-        }
-        foreach($questions as $question){
-            $question->getQuestionReponses();
-        }
 
-        return $this->render('EvalMe/answers.html.twig', [
+        return $this->render('EvalMe/test.html.twig', [
             'id' => $id,
             'title' => $title,
             'description' => $description,
-            'questions' => $questions,
-            'students' => $students
+            'questions' => $questions
         ]);
     }
 }
