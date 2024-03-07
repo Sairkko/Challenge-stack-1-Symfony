@@ -28,15 +28,19 @@ class Test
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
     #[ORM\OneToMany(mappedBy: 'id_test', targetEntity: Question::class)]
     private Collection $questions;
 
+    #[ORM\ManyToMany(targetEntity: Module::class, inversedBy: 'tests')]
+    private Collection $modules;
+
     public function __construct()
     {
         $this->questions = new ArrayCollection();
+        $this->modules = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -106,6 +110,30 @@ class Test
                 $question->setIdTest(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Module>
+     */
+    public function getModules(): Collection
+    {
+        return $this->modules;
+    }
+
+    public function addModule(Module $module): static
+    {
+        if (!$this->modules->contains($module)) {
+            $this->modules->add($module);
+        }
+
+        return $this;
+    }
+
+    public function removeModule(Module $module): static
+    {
+        $this->modules->removeElement($module);
 
         return $this;
     }
