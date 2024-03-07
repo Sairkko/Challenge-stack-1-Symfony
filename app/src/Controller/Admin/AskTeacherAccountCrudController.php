@@ -37,7 +37,7 @@ class AskTeacherAccountCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield TextField::new('email')
+        yield TextField::new('email', 'Email')
             ->setColumns("col-lg-6 col-12")
             ->setLabel('Email');
         yield BooleanField::new('isValid')
@@ -97,5 +97,13 @@ class AskTeacherAccountCrudController extends AbstractCrudController
         $entityManager->persist($user);
         $entityManager->flush();
     }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle(Crud::PAGE_INDEX, 'Demande de compte formateur');
+    }
+
+
 
 }

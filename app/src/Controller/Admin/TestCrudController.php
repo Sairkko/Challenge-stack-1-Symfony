@@ -20,6 +20,8 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Security;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use Symfony\Component\HttpFoundation\Response;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class TestCrudController extends AbstractCrudController
 {
@@ -44,6 +46,8 @@ class TestCrudController extends AbstractCrudController
         return [
             TextField::new('title', 'Titre'),
             TextField::new('description', 'Description'),
+        ];
+    }
             AssociationField::new('modules', 'Matière')
                 ->setCrudController(ModuleCrudController::class)
                 ->formatValue(function ($value, $entity) {
@@ -102,6 +106,21 @@ class TestCrudController extends AbstractCrudController
         $testId = $context->getEntity()->getInstance()->getId();
         // Assurez-vous que 'some_route' est le nom de la route de votre nouveau contrôleur Symfony
         return $this->redirect($this->generateUrl('some_route', ['id' => $testId]));
+    }
+    
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle(Crud::PAGE_INDEX, 'Quizz')
+            ->setPageTitle(Crud::PAGE_NEW, 'Créer');
+    }
+
+    public function configureAction(Actions $actions): Actions
+    {
+        return $actions
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action->setLabel('Créer');
+            });
     }
 
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder

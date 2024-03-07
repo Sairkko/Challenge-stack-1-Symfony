@@ -13,6 +13,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\Security\Core\Security;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 
 class EventCrudController extends AbstractCrudController
 {
@@ -29,6 +31,23 @@ class EventCrudController extends AbstractCrudController
     }
 
 
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle(Crud::PAGE_INDEX, 'Évenement')
+            ->setPageTitle(Crud::PAGE_NEW, 'Créer');
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action->setLabel('Créer');
+            });
+    }
+
+    
     public function configureFields(string $pageName): iterable
     {
         $groupsField = AssociationField::new('groups', 'Classes')
@@ -46,7 +65,7 @@ class EventCrudController extends AbstractCrudController
         }
 
         return [
-            TextField::new('title')
+            TextField::new('title', 'Titre')
                 ->setRequired(true),
             TextField::new('description'),
             $groupsField,
@@ -54,7 +73,7 @@ class EventCrudController extends AbstractCrudController
                 ->setRequired(true),
             DateTimeField::new('end_datetime', 'Date fin')
                 ->setRequired(true),
-            TextField::new('color')
+            TextField::new('color', 'Couleur')
             ->onlyOnForms(),
         ];
     }
