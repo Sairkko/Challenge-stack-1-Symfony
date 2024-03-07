@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -32,6 +33,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'boolean')]
     private $isVerified = false;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $profil_picture = null;
 
     #[ORM\OneToOne(mappedBy: 'id_user', cascade: ['persist', 'remove'])]
     private ?Teacher $teacher = null;
@@ -166,6 +169,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setToken(?string $token): static
     {
         $this->token = $token;
+
+        return $this;
+    }
+
+    public function getProfilPicture(): ?string
+    {
+        return $this->profil_picture;
+    }
+
+    public function setProfilPicture(?string $profil_picture): static
+    {
+        $this->profil_picture = $profil_picture;
 
         return $this;
     }
