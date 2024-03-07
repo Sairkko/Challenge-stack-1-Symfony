@@ -11,6 +11,13 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: StudentRepository::class)]
 class Student
 {
+    public function __toString(): string
+    {
+        // Supposons que chaque étudiant a un prénom (firstName) et un nom (lastName)
+        return $this->name . ' ' . $this->last_name . " (" . $this->getIdUser()->getEmail().")";
+    }
+
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
