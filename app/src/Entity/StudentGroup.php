@@ -24,10 +24,14 @@ class StudentGroup
     #[ORM\ManyToMany(targetEntity: Student::class, mappedBy: 'student_groupe')]
     private Collection $students;
 
+    #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'groups')]
+    private Collection $events;
+
     public function __construct()
     {
         $this->id_school = new ArrayCollection();
         $this->students = new ArrayCollection();
+        $this->events = new ArrayCollection();
     }
 
     public function __toString(): string
@@ -98,6 +102,33 @@ class StudentGroup
     {
         if ($this->students->removeElement($student)) {
             $student->removeStudentGroupe($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): static
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->addGroup($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): static
+    {
+        if ($this->events->removeElement($event)) {
+            $event->removeGroup($this);
         }
 
         return $this;
