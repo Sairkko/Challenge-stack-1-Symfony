@@ -128,69 +128,75 @@
 
 
 {% block body %}
-    <div class="bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
-            <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Test</h2>
-            <!-- Bouton pour ouvrir la modale -->
-            <button id="openModalBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-2 mx-auto">
-                Créer vos questions
-            </button>
-        </div>
-
-        <div class="mt-8 sm:mx-auto sm:w-full">
-            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Titre: {{ title }}</h3>
-                <h3 class="mt-2 text-sm text-gray-600">Description: {{ description }}</h3>
-                <!-- Conteneur de grille pour les questions -->
-                <div class="mt-6 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 gap-4">
-                    {% for question in questions %}
-                        <div class="p-5 bg-white rounded-lg shadow-lg">
-                                <!-- Votre code existant pour afficher la question -->
-                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Question: {{ question.questionText }}</h4>
-                            <ul class="list-none">
-                                {% if question.type.name == 'QCM' or question.type.name == 'UNIQUE_CHOICE' %}
-                                    {% for reponse in question.questionReponses %}
-                                        <li class="mb-1">
-                                            <label class="inline-flex items-center">
-                                                {% if question.type.name == 'UNIQUE_CHOICE' %}
-                                                    <input disabled type="radio" class="form-radio h-5 w-5 text-red-600" id="response_{{ reponse.id }}" name="question_{{ question.id }}" {% if reponse.isCorrect %}checked{% endif %}>
-                                                {% elseif question.type.name == 'QCM' %}
-                                                    <input disabled type="checkbox" class="form-checkbox h-5 w-5 text-red-600" id="response_{{ reponse.id }}" name="response_{{ reponse.id }}" {% if reponse.isCorrect %}checked{% endif %}>
-                                                {% endif %}
-                                                <span class="ml-2 text-gray-700">{{ reponse.text }}</span>
-                                            </label>
-                                        </li>
-                                    {% endfor %}
-                                {% elseif question.type.name == 'OPEN_QUESTION' %}
-                                    {% for reponse in question.questionReponses %}
-                                        <li class="mb-1">
-                                            <label for="open_response_{{ question.id }}" class="block text-gray-700">Réponse:</label>
-                                            <textarea disabled id="open_response_{{ question.id }}" name="open_response_{{ question.id }}" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 border">{{ reponse.text }}</textarea>
-                                        </li>
-                                    {% endfor %}
-                                {% endif %}
-                                <li class="mt-2 text-sm font-medium">Point: {{ question.point }}</li>
-                            </ul>
-                            <div class="flex items-center">
-                                <form action="{{ path('delete_question', {'id': question.id}) }}" method="post" class="mr-2">
-                                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                    <input type="hidden" name="testId" value="{{ id }}">
-                                </form>
-                                <button onclick="openEditModal({{ question.id }}, '{{ question.questionText | escape('js') }}', '{{ question.point }}', '{{ question.type.name }}', '{{ path('edit_question', {'id': question.id}) }}')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">
-                                    <i class="fa-solid fa-edit"></i>
-                                </button>
-                            </div>
-
-                        </div>
-                    {% endfor %}
-                </div>
+    {% if 'ROLE_STUDENT' in role %}
+        bonjour
+    {% else %}
+        <div class="bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+            <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Quizz</h2>
+                <!-- Bouton pour ouvrir la modale -->
+                <button id="openModalBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-2 mx-auto">
+                    Créer vos questions
+                </button>
 
             </div>
-        </div>
 
-    </div>
+            <div class="mt-8 sm:mx-auto sm:w-full">
+                <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Titre: {{ title }}</h3>
+                    <h3 class="mt-2 text-sm text-gray-600">Description: {{ description }}</h3>
+                    <!-- Conteneur de grille pour les questions -->
+                    <div class="mt-6 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 gap-4">
+                        {% for question in questions %}
+                            <div class="p-5 bg-white rounded-lg shadow-lg">
+                                <!-- Votre code existant pour afficher la question -->
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Question: {{ question.questionText }}</h4>
+                                <ul class="list-none">
+                                    {% if question.type.name == 'QCM' or question.type.name == 'UNIQUE_CHOICE' %}
+                                        {% for reponse in question.questionReponses %}
+                                            <li class="mb-1">
+                                                <label class="inline-flex items-center">
+                                                    {% if question.type.name == 'UNIQUE_CHOICE' %}
+                                                        <input disabled type="radio" class="form-radio h-5 w-5 text-red-600" id="response_{{ reponse.id }}" name="question_{{ question.id }}" {% if reponse.isCorrect %}checked{% endif %}>
+                                                    {% elseif question.type.name == 'QCM' %}
+                                                        <input disabled type="checkbox" class="form-checkbox h-5 w-5 text-red-600" id="response_{{ reponse.id }}" name="response_{{ reponse.id }}" {% if reponse.isCorrect %}checked{% endif %}>
+                                                    {% endif %}
+                                                    <span class="ml-2 text-gray-700">{{ reponse.text }}</span>
+                                                </label>
+                                            </li>
+                                        {% endfor %}
+                                    {% elseif question.type.name == 'OPEN_QUESTION' %}
+                                        {% for reponse in question.questionReponses %}
+                                            <li class="mb-1">
+                                                <label for="open_response_{{ question.id }}" class="block text-gray-700">Réponse:</label>
+                                                <textarea disabled id="open_response_{{ question.id }}" name="open_response_{{ question.id }}" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 border">{{ reponse.text }}</textarea>
+                                            </li>
+                                        {% endfor %}
+                                    {% endif %}
+                                    <li class="mt-2 text-sm font-medium">Point: {{ question.point }}</li>
+                                </ul>
+                                <div class="flex items-center">
+                                    <form action="{{ path('delete_question', {'id': question.id}) }}" method="post" class="mr-2">
+                                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                        <input type="hidden" name="testId" value="{{ id }}">
+                                    </form>
+                                    <button onclick="openEditModal({{ question.id }}, '{{ question.questionText | escape('js') }}', '{{ question.point }}', '{{ question.type.name }}', '{{ path('edit_question', {'id': question.id}) }}')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">
+                                        <i class="fa-solid fa-edit"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    {% endif %}
+
 
     <!-- La modale -->
     <div id="myModal" class="modal hidden fixed z-10 inset-0 overflow-y-auto">

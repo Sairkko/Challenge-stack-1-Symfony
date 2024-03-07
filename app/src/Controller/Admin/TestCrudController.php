@@ -21,18 +21,23 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Security;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class TestCrudController extends AbstractCrudController
 {
     private $security;
     private $authorizationChecker;
+    private $adminUrlGenerator;
+    private $entityManager;
 
-
-    public function __construct(Security $security, AuthorizationCheckerInterface $authorizationChecker)
+    public function __construct(Security $security, AuthorizationCheckerInterface $authorizationChecker, AdminUrlGenerator $adminUrlGenerator, EntityManagerInterface $entityManager)
     {
         $this->security = $security;
         $this->authorizationChecker = $authorizationChecker;
+        $this->adminUrlGenerator = $adminUrlGenerator;
+        $this->entityManager = $entityManager;
     }
 
     public static function getEntityFqcn(): string
@@ -96,6 +101,9 @@ class TestCrudController extends AbstractCrudController
         $customAction = Action::new('customAction', 'Affichage Personnalisé')
             ->linkToCrudAction('myCustomAction'); // Nom de la méthode dans ce contrôleur
 
+        $duplicateAction = Action::new('duplicateQuizz', 'Dupliquer')
+            ->linkToCrudAction('duplicateQuizz');
+
 
         if (!$this->authorizationChecker->isGranted('ROLE_TEACHER')) {
             $actions
@@ -107,14 +115,16 @@ class TestCrudController extends AbstractCrudController
 
 
         return $actions
-            ->add(Crud::PAGE_INDEX, $customAction);
+            ->add(Crud::PAGE_INDEX, $customAction)
+            ->add(Crud::PAGE_INDEX, $duplicateAction)
+            ;
     }
 
     public function myCustomAction(AdminContext $context)
     {
         $testId = $context->getEntity()->getInstance()->getId();
-        // Assurez-vous que 'some_route' est le nom de la route de votre nouveau contrôleur Symfony
-        return $this->redirect($this->generateUrl('some_route', ['id' => $testId]));
+        // Assurez-vous que 'quizz' est le nom de la route de votre nouveau contrôleur Symfony
+        return $this->redirect($this->generateUrl('quizz', ['id' => $testId]));
     }
     
     public function configureCrud(Crud $crud): Crud
@@ -164,6 +174,32 @@ class TestCrudController extends AbstractCrudController
         }
 
         return $qb;
+    }
+
+    public function duplicateQuizz(AdminContext $context)
+    {
+        // Récupérer l'entité originale
+        $originalQuizz = $context->getEntity()->getInstance();
+
+        // Créer une nouvelle instance de l'entité
+        $newQuizz = clone $originalQuizz; // Assurez-vous que l'entité Test gère correctement le clonage, notamment pour les relations.
+
+        // Modifier le nom du quizz
+        $newQuizz->setTitle($originalQuizz->getTitle() . ' - copie');
+
+        // Réinitialiser tout autre attribut si nécessaire
+        // $newQuizz->setSomeField('value');
+
+        // Enregistrer la nouvelle entité
+        $this->entityManager->persist($newQuizz);
+        $this->entityManager->flush();
+
+        // Rediriger l'utilisateur vers la page d'édition du nouveau quizz
+        return $this->redirect($this->adminUrlGenerator
+            ->setController(self::class)
+            ->setAction(Crud::PAGE_EDIT)
+            ->setEntityId($newQuizz->getId())
+            ->generateUrl());
     }
 
 }

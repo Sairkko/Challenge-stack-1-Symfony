@@ -101,7 +101,7 @@ class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::section('Dashboard')->setPermission('ROLE_USER');
-        yield MenuItem::linkToDashboard('Accueil', 'fa fa-home');
+        yield MenuItem::linkToDashboard('Accueil', 'fa fa-home')->setPermission('ROLE_STUDENT');
         yield MenuItem::linkToCrud('Profile', 'fas fa-id-card', User::class)->setPermission('ROLE_STUDENT');
         yield MenuItem::linkToCrud('Demande de compte formatteur', 'fas fa-id-card', AskTeacherAccount::class)->setPermission('ROLE_ADMIN');
 
