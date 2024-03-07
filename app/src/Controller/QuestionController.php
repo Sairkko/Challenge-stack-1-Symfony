@@ -56,7 +56,7 @@ class QuestionController extends AbstractController {
         $entityManager->flush();
 
         // Redirigez vers une page de confirmation ou une autre page appropriée
-        return $this->redirectToRoute('some_route', ['id' => $testId]);
+        return $this->redirectToRoute('quizz', ['id' => $testId]);
     }
 
     protected function handleMultipleChoiceResponses(Request $request, Question $question, EntityManagerInterface $entityManager) {
@@ -170,7 +170,7 @@ class QuestionController extends AbstractController {
         $entityManager->flush();
 
         // Redirigez vers la page appropriée après la suppression
-        return $this->redirectToRoute('some_route', ['id' => $testId]);
+        return $this->redirectToRoute('quizz', ['id' => $testId]);
     }
 
     #[Route('/edit-question/{id}', name: 'edit_question', methods: ['PATCH'])]
@@ -201,7 +201,7 @@ class QuestionController extends AbstractController {
         $entityManager->flush();
 
         // Rediriger ou retourner une réponse après la mise à jour
-        return $this->redirectToRoute('some_route', ['id' => $testId]);
+        return $this->redirectToRoute('quizz', ['id' => $testId]);
     }
 
 }
