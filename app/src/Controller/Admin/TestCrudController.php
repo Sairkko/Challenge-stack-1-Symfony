@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Test;
 use App\Enum\QuizzType;
+use App\Repository\StudentGroupRepository;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
@@ -22,6 +23,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 class TestCrudController extends AbstractCrudController
 {
@@ -46,6 +48,7 @@ class TestCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        $teacherId = $this->getUser()->getTeacher();
         return [
             TextField::new('title', 'Titre'),
             TextField::new('description', 'Description'),
@@ -57,7 +60,16 @@ class TestCrudController extends AbstractCrudController
                         return $module->getName();
                     })->toArray());
                 }),
-//            mettre type et dates
+            AssociationField::new('groups', 'Classes')
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                // Personnalisez la requête pour afficher uniquement les étudiants créés par le professeur
+                'query_builder' => function (StudentGroupRepository $studentGroupRepository) use ($teacherId) {
+                    return $studentGroupRepository->createQueryBuilder('s')
+                        ->where('s.teacher = :teacherId')
+                        ->setParameter('teacherId', $teacherId);
+                }
+            ]),
             ChoiceField::new('type', 'Type de Quizz')
                 ->setChoices([
                     'QCM point négatif' => QuizzType::QCMN,
@@ -67,6 +79,7 @@ class TestCrudController extends AbstractCrudController
             DateTimeField::new('endDate', 'Date de fin')
         ];
     }
+    
 
 
     public function createEntity(string $entityFqcn)
@@ -113,12 +126,27 @@ class TestCrudController extends AbstractCrudController
         // Assurez-vous que 'quizz' est le nom de la route de votre nouveau contrôleur Symfony
         return $this->redirect($this->generateUrl('quizz', ['id' => $testId]));
     }
+    
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle(Crud::PAGE_INDEX, 'Quizz')
+            ->setPageTitle(Crud::PAGE_NEW, 'Créer');
+    }
+
+    public function configureAction(Actions $actions): Actions
+    {
+        return $actions
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action->setLabel('Créer');
+            });
+    }
 
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
         $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
 
-        if ($this->getUser()->getRoles() == "ROLE_TEACHER") {
+        if (in_array('ROLE_TEACHER',$this->getUser()->getRoles())) {
             $teacherId = $this->getUser()->getTeacher();
 
             $qb->andWhere('entity.id_teacher = :teacherId')

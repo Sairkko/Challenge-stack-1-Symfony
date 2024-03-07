@@ -48,11 +48,15 @@ class Test
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $end_date = null;
 
+    #[ORM\ManyToMany(targetEntity: StudentGroup::class, inversedBy: 'tests')]
+    private Collection $groups;
+
     public function __construct()
     {
         $this->questions = new ArrayCollection();
         $this->modules = new ArrayCollection();
         $this->type = QuizzType::NORMAL;
+        $this->groups = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -182,6 +186,30 @@ class Test
     public function setEndDate(?\DateTimeInterface $end_date): static
     {
         $this->end_date = $end_date;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StudentGroup>
+     */
+    public function getGroups(): Collection
+    {
+        return $this->groups;
+    }
+
+    public function addGroup(StudentGroup $group): static
+    {
+        if (!$this->groups->contains($group)) {
+            $this->groups->add($group);
+        }
+
+        return $this;
+    }
+
+    public function removeGroup(StudentGroup $group): static
+    {
+        $this->groups->removeElement($group);
 
         return $this;
     }
