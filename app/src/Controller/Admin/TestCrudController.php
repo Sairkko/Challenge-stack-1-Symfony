@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Test;
+use App\Enum\QuizzType;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
@@ -12,6 +13,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Security;
@@ -48,7 +51,15 @@ class TestCrudController extends AbstractCrudController
                     return implode(', ', $modules->map(function ($module) {
                         return $module->getName();
                     })->toArray());
-                })
+                }),
+//            mettre type et dates
+            ChoiceField::new('type', 'Type de Quizz')
+                ->setChoices([
+                    'QCM point négatif' => QuizzType::QCMN,
+                    'QCM normal' => QuizzType::NORMAL,
+                ]),
+            DateTimeField::new('startDate', 'Date de début'),
+            DateTimeField::new('endDate', 'Date de fin')
         ];
     }
 

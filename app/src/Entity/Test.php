@@ -2,9 +2,11 @@
 
 namespace App\Entity;
 
+use App\Enum\QuizzType;
 use App\Repository\TestRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TestRepository::class)]
@@ -37,10 +39,20 @@ class Test
     #[ORM\ManyToMany(targetEntity: Module::class, inversedBy: 'tests')]
     private Collection $modules;
 
+    #[ORM\Column(type: Types::TEXT, length: 10, nullable: true,enumType: QuizzType::class)]
+    private QuizzType $type;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $start_date = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $end_date = null;
+
     public function __construct()
     {
         $this->questions = new ArrayCollection();
         $this->modules = new ArrayCollection();
+        $this->type = QuizzType::NORMAL;
     }
 
     public function getId(): ?int
@@ -134,6 +146,42 @@ class Test
     public function removeModule(Module $module): static
     {
         $this->modules->removeElement($module);
+
+        return $this;
+    }
+
+    public function getType(): QuizzType
+    {
+        return $this->type;
+    }
+
+    public function setType(QuizzType $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getStartDate(): ?\DateTimeInterface
+    {
+        return $this->start_date;
+    }
+
+    public function setStartDate(?\DateTimeInterface $start_date): static
+    {
+        $this->start_date = $start_date;
+
+        return $this;
+    }
+
+    public function getEndDate(): ?\DateTimeInterface
+    {
+        return $this->end_date;
+    }
+
+    public function setEndDate(?\DateTimeInterface $end_date): static
+    {
+        $this->end_date = $end_date;
 
         return $this;
     }
