@@ -58,4 +58,11 @@ class UserCrudController extends AbstractCrudController
 
         return $qb;
     }
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle(Crud::PAGE_INDEX, 'Profile');
+    }
+
+
 }

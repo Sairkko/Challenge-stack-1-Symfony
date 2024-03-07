@@ -67,4 +67,19 @@ class StudentCrudController extends AbstractCrudController
 
         return $qb;
     }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle(Crud::PAGE_INDEX, 'Elève')
+            ->setPageTitle(Crud::PAGE_NEW, 'Créer');
+    }
+
+    public function configureAction(Actions $actions): Actions
+    {
+        return $actions
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action->setLabel('Créer');
+            });
+    }
 }

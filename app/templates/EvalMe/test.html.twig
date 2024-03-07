@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Test{% endblock %}
+{% block title %}Quizz{% endblock %}
 
 {% block javascripts %}
     <script>
@@ -68,7 +68,7 @@
                         case 'null':
                             fieldsHtml = `
                     <label for="openAnswer">Réponse :</label>
-                    <textarea id="openAnswer" name="openAnswer" class="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+                    <textarea id="openAnswer" name="openAnswer" class="p-2 mt-1 border block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
                     `;
                             break;
                     }
@@ -123,74 +123,180 @@
                 conditionalFields.innerHTML += '<label class="block text-gray-700">Réponse: <textarea name="open_response" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea></label>';
             }
         }
+
+        function toggleAccordion(id) {
+            let accordion = document.getElementById(id);
+            let chevron = document.getElementById('chevron' + id.replace('accordion', ''));
+
+            // Vérifie si l'accordéon a la classe 'disabled-accordion'
+            if (!accordion.classList.contains('disabled-accordion')) {
+                if (accordion.style.maxHeight) {
+                    accordion.style.maxHeight = null;
+                    chevron.classList.remove('rotate-180');
+                } else {
+                    accordion.style.maxHeight = accordion.scrollHeight + "px";
+                    chevron.classList.add('rotate-180');
+                }
+            }
+        }
+
+        function submitForm(formElement) {
+            const questionType = formElement.querySelector('input[name="questionType"]').value;
+            let answer;
+            if (questionType === 'QCM' || questionType === 'UNIQUE_CHOICE') {
+                // Pour les QCM ou UNIQUE_CHOICE, récupérez la valeur de l'input coché
+                const selectedOption = formElement.querySelector('input[name="response_student_' + formElement.id + '"]:checked');
+                answer = selectedOption ? selectedOption.value : '';
+            } else if (questionType === 'OPEN_QUESTION') {
+                // Pour les questions ouvertes, récupérez la valeur du textarea
+                const textArea = formElement.querySelector('textarea[name="response_student_' + formElement.id + '"]');
+                answer = textArea ? textArea.value : '';
+            }
+            // Ajoutez la logique ici si vous avez besoin de traiter la réponse ou de la stocker dans un champ caché avant la soumission.
+            formElement.querySelector('input[name="hiddenAnswerField"]').value = answer;
+
+            return true; // Retournez false pour empêcher la soumission si nécessaire
+        }
+
     </script>
+
 {% endblock %}
 
 
 {% block body %}
-    <div class="bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
-            <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Test</h2>
-            <!-- Bouton pour ouvrir la modale -->
-            <button id="openModalBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-2 mx-auto">
-                Créer vos questions
-            </button>
-        </div>
-
+    {% if 'ROLE_STUDENT' in role %}
         <div class="mt-8 sm:mx-auto sm:w-full">
             <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
                 <h3 class="text-lg leading-6 font-medium text-gray-900">Titre: {{ title }}</h3>
                 <h3 class="mt-2 text-sm text-gray-600">Description: {{ description }}</h3>
-                <!-- Conteneur de grille pour les questions -->
                 <div class="mt-6 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 gap-4">
                     {% for question in questions %}
                         <div class="p-5 bg-white rounded-lg shadow-lg">
-                                <!-- Votre code existant pour afficher la question -->
-                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Question: {{ question.questionText }}</h4>
-                            <ul class="list-none">
-                                {% if question.type.name == 'QCM' or question.type.name == 'UNIQUE_CHOICE' %}
-                                    {% for reponse in question.questionReponses %}
-                                        <li class="mb-1">
-                                            <label class="inline-flex items-center">
-                                                {% if question.type.name == 'UNIQUE_CHOICE' %}
-                                                    <input disabled type="radio" class="form-radio h-5 w-5 text-red-600" id="response_{{ reponse.id }}" name="question_{{ question.id }}" {% if reponse.isCorrect %}checked{% endif %}>
-                                                {% elseif question.type.name == 'QCM' %}
-                                                    <input disabled type="checkbox" class="form-checkbox h-5 w-5 text-red-600" id="response_{{ reponse.id }}" name="response_{{ reponse.id }}" {% if reponse.isCorrect %}checked{% endif %}>
-                                                {% endif %}
-                                                <span class="ml-2 text-gray-700">{{ reponse.text }}</span>
-                                            </label>
-                                        </li>
-                                    {% endfor %}
-                                {% elseif question.type.name == 'OPEN_QUESTION' %}
-                                    {% for reponse in question.questionReponses %}
-                                        <li class="mb-1">
-                                            <label for="open_response_{{ question.id }}" class="block text-gray-700">Réponse:</label>
-                                            <textarea disabled id="open_response_{{ question.id }}" name="open_response_{{ question.id }}" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 border">{{ reponse.text }}</textarea>
-                                        </li>
-                                    {% endfor %}
-                                {% endif %}
-                                <li class="mt-2 text-sm font-medium">Point: {{ question.point }}</li>
-                            </ul>
-                            <div class="flex items-center">
-                                <form action="{{ path('delete_question', {'id': question.id}) }}" method="post" class="mr-2">
-                                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                    <input type="hidden" name="testId" value="{{ id }}">
-                                </form>
-                                <button onclick="openEditModal({{ question.id }}, '{{ question.questionText | escape('js') }}', '{{ question.point }}', '{{ question.type.name }}', '{{ path('edit_question', {'id': question.id}) }}')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">
-                                    <i class="fa-solid fa-edit"></i>
+                            <!-- Zone cliquable pour déplier l'accordéon -->
+                            <div onclick="toggleAccordion('accordion{{ question.id }}')" class="flex justify-between items-center cursor-pointer {{ responsesStatus[question.id] ? 'disabled-accordion' : '' }}">
+                                <div class="flex items-center">
+                                    <h4 class="text-lg font-semibold text-gray-800">Question: {{ question.questionText }} <small class="font-normal text-gray-700">({{ question.point }} point)</small></h4>
+                                    {% if responsesStatus[question.id] %}
+                                        <!-- Icône de vérification affichée si la question a déjà été répondue -->
+                                        <span class="fas fa-check check-icon ml-2"></span>
+                                    {% endif %}
+                                </div>
+                                <button class="focus:outline-none">
+                                    <svg class="w-6 h-6 transform transition-transform" id="chevron{{ question.id }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
                                 </button>
                             </div>
-
+                            <!-- Contenu de l'accordéon -->
+                            <div id="accordion{{ question.id }}" class="max-h-0 overflow-hidden transition-max-height duration-700 ease-in-out ">
+                            <form action="{{ path('submit_student_response', {'id': question.id}) }}" method="post" class="mt-2" onsubmit="return submitForm(this);">
+                                    <ul class="list-none">
+                                        {% if question.type.name == 'QCM' %}
+                                            {% for i in 1..4 %}
+                                                <li class="mb-1">
+                                                <label class="inline-flex items-center">
+                                                    <input type="checkbox" class="h-5 w-5 text-red-600" id="response_student_{{ question.id }}_{{ i }}" name="response_student_{{ question.id }}_{{ i }}" value="{{ question.questionReponses[i-1].text | e('html_attr') }}">
+                                                    <span class="ml-2 text-gray-700">{{ question.questionReponses[i-1].text }}</span>
+                                                </label>
+                                                </li>
+                                            {% endfor %}
+                                        {% elseif question.type.name == 'UNIQUE_CHOICE' %}
+                                            {% for reponse in question.questionReponses %}
+                                                <li class="mb-1">
+                                                    <label class="inline-flex items-center">
+                                                        <input type="radio" class="h-5 w-5 text-red-600" id="response_student_{{ reponse.id }}" name="response_student_{{ question.id }}" value="{{ reponse.text | e('html_attr') }}">
+                                                        <span class="ml-2 text-gray-700">{{ reponse.text }}</span>
+                                                    </label>
+                                                </li>
+                                            {% endfor %}
+                                        {% elseif question.type.name == 'OPEN_QUESTION' %}
+                                            <li class="mb-1">
+                                                <label for="open_response_{{ question.id }}" class="block text-gray-700">Réponse:</label>
+                                                <textarea id="open_response_{{ question.id }}" name="response_student_{{ question.id }}" rows="3" class="mt-1 block border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"></textarea>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                    <div class="flex justify-end mt-2">
+                                        <input type="hidden" name="questionType" value="{{ question.type.name }}">
+                                        <input type="hidden" name="testId" value="{{ id }}">
+                                        <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
+                                            Envoyer
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
-
             </div>
         </div>
+    {% else %}
+        <div class="bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+            <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Quizz</h2>
+                <!-- Bouton pour ouvrir la modale -->
+                <button id="openModalBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-2 mx-auto">
+                    Créer vos questions
+                </button>
 
-    </div>
+            </div>
+
+            <div class="mt-8 sm:mx-auto sm:w-full">
+                <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Titre: {{ title }}</h3>
+                    <h3 class="mt-2 text-sm text-gray-600">Description: {{ description }}</h3>
+                    <!-- Conteneur de grille pour les questions -->
+                    <div class="mt-6 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 gap-4">
+                        {% for question in questions %}
+                            <div class="p-5 bg-white rounded-lg shadow-lg">
+                                <!-- Votre code existant pour afficher la question -->
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Question: {{ question.questionText }}</h4>
+                                <ul class="list-none">
+                                    {% if question.type.name == 'QCM' or question.type.name == 'UNIQUE_CHOICE' %}
+                                        {% for reponse in question.questionReponses %}
+                                            <li class="mb-1">
+                                                <label class="inline-flex items-center">
+                                                    {% if question.type.name == 'UNIQUE_CHOICE' %}
+                                                        <input disabled type="radio" class="form-radio h-5 w-5 text-red-600" id="response_{{ reponse.id }}" name="question_{{ question.id }}" {% if reponse.isCorrect %}checked{% endif %}>
+                                                    {% elseif question.type.name == 'QCM' %}
+                                                        <input disabled type="checkbox" class="form-checkbox h-5 w-5 text-red-600" id="response_{{ reponse.id }}" name="response_{{ reponse.id }}" {% if reponse.isCorrect %}checked{% endif %}>
+                                                    {% endif %}
+                                                    <span class="ml-2 text-gray-700">{{ reponse.text }}</span>
+                                                </label>
+                                            </li>
+                                        {% endfor %}
+                                    {% elseif question.type.name == 'OPEN_QUESTION' %}
+                                        {% for reponse in question.questionReponses %}
+                                            <li class="mb-1">
+                                                <label for="open_response_{{ question.id }}" class="block text-gray-700">Réponse:</label>
+                                                <textarea disabled id="open_response_{{ question.id }}" name="open_response_{{ question.id }}" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50 border">{{ reponse.text }}</textarea>
+                                            </li>
+                                        {% endfor %}
+                                    {% endif %}
+                                    <li class="mt-2 text-sm font-medium">Point: {{ question.point }}</li>
+                                </ul>
+                                <div class="flex items-center">
+                                    <form action="{{ path('delete_question', {'id': question.id}) }}" method="post" class="mr-2">
+                                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                        <input type="hidden" name="testId" value="{{ id }}">
+                                    </form>
+                                    <button onclick="openEditModal({{ question.id }}, '{{ question.questionText | escape('js') }}', '{{ question.point }}', '{{ question.type.name }}', '{{ path('edit_question', {'id': question.id}) }}')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">
+                                        <i class="fa-solid fa-edit"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    {% endif %}
+
 
     <!-- La modale -->
     <div id="myModal" class="modal hidden fixed z-10 inset-0 overflow-y-auto">

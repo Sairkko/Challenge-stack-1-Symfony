@@ -26,3 +26,13 @@
 .datagrid tr:not(.selected-row):hover .dropdown-toggle {
   border-color: transparent;
 }
+
+.disabled-accordion {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.check-icon {
+  color: green;
+}
+

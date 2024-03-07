@@ -21,17 +21,23 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Security;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 class TestCrudController extends AbstractCrudController
 {
     private $security;
     private $authorizationChecker;
+    private $adminUrlGenerator;
+    private $entityManager;
 
-
-    public function __construct(Security $security, AuthorizationCheckerInterface $authorizationChecker)
+    public function __construct(Security $security, AuthorizationCheckerInterface $authorizationChecker, AdminUrlGenerator $adminUrlGenerator, EntityManagerInterface $entityManager)
     {
         $this->security = $security;
         $this->authorizationChecker = $authorizationChecker;
+        $this->adminUrlGenerator = $adminUrlGenerator;
+        $this->entityManager = $entityManager;
     }
 
     public static function getEntityFqcn(): string
@@ -54,7 +60,6 @@ class TestCrudController extends AbstractCrudController
                         return $module->getName();
                     })->toArray());
                 }),
-//            mettre type et dates
             AssociationField::new('groups', 'Classes')
             ->setFormTypeOptions([
                 'by_reference' => false,
@@ -74,6 +79,7 @@ class TestCrudController extends AbstractCrudController
             DateTimeField::new('endDate', 'Date de fin')
         ];
     }
+    
 
 
     public function createEntity(string $entityFqcn)
@@ -98,6 +104,9 @@ class TestCrudController extends AbstractCrudController
         $customAction2 = Action::new('customAction2', 'Voir les réponses')
             ->linkToCrudAction('getResponseAction'); // Nom de la méthode dans ce contrôleur
 
+        $duplicateAction = Action::new('duplicateQuizz', 'Dupliquer')
+            ->linkToCrudAction('duplicateQuizz');
+
 
         if (!$this->authorizationChecker->isGranted('ROLE_TEACHER')) {
             $actions
@@ -105,19 +114,29 @@ class TestCrudController extends AbstractCrudController
                 ->remove(Crud::PAGE_INDEX, Action::EDIT)
                 ->remove(Crud::PAGE_INDEX, Action::DELETE)
             ;
+        } else{
+            $actions
+                ->add(Crud::PAGE_INDEX, $duplicateAction);
         }
 
 
         return $actions
             ->add(Crud::PAGE_INDEX, $customAction2)
             ->add(Crud::PAGE_INDEX, $customAction);
-            
     }
 
     public function myCustomAction(AdminContext $context)
     {
         $testId = $context->getEntity()->getInstance()->getId();
-        return $this->redirect($this->generateUrl('some_route', ['id' => $testId]));
+        // Assurez-vous que 'quizz' est le nom de la route de votre nouveau contrôleur Symfony
+        return $this->redirect($this->generateUrl('quizz', ['id' => $testId]));
+    }
+    
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle(Crud::PAGE_INDEX, 'Quizz')
+            ->setPageTitle(Crud::PAGE_NEW, 'Créer');
     }
 
 
@@ -127,12 +146,6 @@ class TestCrudController extends AbstractCrudController
         return $this->redirect($this->generateUrl('answers_page', ['id' => $testId]));
     }
     
-    public function configureCrud(Crud $crud): Crud
-    {
-        return $crud
-            ->setPageTitle(Crud::PAGE_INDEX, 'Quizz')
-            ->setPageTitle(Crud::PAGE_NEW, 'Créer');
-    }
 
     public function configureAction(Actions $actions): Actions
     {
@@ -176,4 +189,39 @@ class TestCrudController extends AbstractCrudController
         return $qb;
     }
 
+    public function duplicateQuizz(AdminContext $context)
+    {
+        $originalQuizz = $context->getEntity()->getInstance();
+
+        $newQuizz = clone $originalQuizz;
+        $newQuizz->setTitle($originalQuizz->getTitle() . ' - Copie');
+
+        foreach ($originalQuizz->getQuestions() as $originalQuestion) {
+            // Cloner la question originale
+            $newQuestion = clone $originalQuestion;
+            $newQuestion->setIdTest($newQuizz);
+            $newQuizz->addQuestion($newQuestion);
+
+            foreach ($originalQuestion->getQuestionReponses() as $originalQuestionReponse) {
+                $newQuestionReponse = clone $originalQuestionReponse;
+                $newQuestionReponse->setIdQuestion($newQuestion);
+                $newQuestion->addQuestionReponse($newQuestionReponse);
+            }
+        }
+
+        $this->entityManager->persist($newQuizz);
+        foreach ($newQuizz->getQuestions() as $newQuestion) {
+            $this->entityManager->persist($newQuestion);
+            foreach ($newQuestion->getQuestionReponses() as $newQuestionReponse) {
+                $this->entityManager->persist($newQuestionReponse);
+            }
+        }
+        $this->entityManager->flush();
+
+        return $this->redirect($this->adminUrlGenerator
+            ->setController(self::class)
+            ->setAction(Crud::PAGE_EDIT)
+            ->setEntityId($newQuizz->getId())
+            ->generateUrl());
+    }
 }
