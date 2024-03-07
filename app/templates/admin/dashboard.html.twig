@@ -25,7 +25,7 @@
                         color: "#00A759",
                         text: 'Evenement +',
                         click: function() {
-                            window.location.href = '/admin?crudAction=new&crudControllerFqcn=App%5CController%5CAdmin%5CEventCrudController';
+                            window.location.href = '/dashboard?crudAction=new&crudControllerFqcn=App%5CController%5CAdmin%5CEventCrudController';
                         }
                     }
                 },
@@ -44,9 +44,13 @@
             });
 
             calendar.on('eventClick', (e) => {
-                {% if is_granted('ROLE_TEACHER') %}
-                    window.location.href = "/admin?crudAction=edit&crudControllerFqcn=App%5CController%5CAdmin%5CEventCrudController&entityId=" + e.event.id
-                {% endif %}
+                if(e.event.extendedProps.type === "test"){
+                    window.location.href = "/quizz/" + e.event.id
+                }else{
+                    {% if is_granted('ROLE_TEACHER') %}
+                        window.location.href = "/dashboard?crudAction=edit&crudControllerFqcn=App%5CController%5CAdmin%5CEventCrudController&entityId=" + e.event.id
+                    {% endif %}
+                }
             });
 
             calendar.render();

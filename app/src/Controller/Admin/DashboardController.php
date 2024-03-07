@@ -17,6 +17,7 @@ use App\Entity\Teacher;
 use App\Entity\Test;
 use App\Entity\User;
 use App\Repository\EventRepository;
+use App\Repository\TestRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
@@ -30,11 +31,13 @@ use Symfony\Component\Routing\Annotation\Route;
 class DashboardController extends AbstractDashboardController
 {
     private $eventRepository;
+    private $testRepository;
     private $security;
 
-    public function __construct(EventRepository $monRepository, Security $security)
+    public function __construct(TestRepository $testRepository, EventRepository $monRepository, Security $security)
     {
         $this->eventRepository = $monRepository;
+        $this->testRepository = $testRepository;
         $this->security = $security;
     }
 
@@ -45,10 +48,13 @@ class DashboardController extends AbstractDashboardController
         $user = $this->security->getUser();
         if ($user && in_array('ROLE_TEACHER', $user->getRoles())){
             $events = $this->eventRepository->findByTeacher($user->getTeacher());
+            $tests = $this->testRepository->findByTeacher($user->getTeacher());
         }else if ($user && in_array('ROLE_STUDENT', $user->getRoles())){
             $events = $this->eventRepository->findByEleve($user->getStudent());
+            $tests = $this->testRepository->findByEleve($user->getStudent());
         }else{
             $events = [];
+            $tests = [];
         }
         // $events = $this->eventRepository->findAll(); Si l'utilisateur est admin
         $evenements = [];
@@ -57,8 +63,21 @@ class DashboardController extends AbstractDashboardController
                 'id' => $event->getId(),
                 'start' => $event->getStartDatetime()->format('Y-m-d H:i:s'),
                 'end' => $event->getEndDatetime()->format('Y-m-d H:i:s'),
-                'title' => $event->getTitle(),
+                'title' => "Cours : ". $event->getTitle(),
                 'description' => $event->getDescription(),
+                'type' => "cours",
+                'color' => "#1367FB"
+            ];
+        }
+        foreach($tests as $test){
+            $evenements[] = [
+                'id' => $test->getId(),
+                'start' => $test->getStartDate()->format('Y-m-d H:i:s'),
+                'end' => $test->getEndDate()->format('Y-m-d H:i:s'),
+                'title' => "Evaluation : ". $test->getTitle(),
+                'description' => $test->getDescription(),
+                'type' => "test",
+                'color' => "#00CC66"
             ];
         }
         $data = json_encode($evenements);

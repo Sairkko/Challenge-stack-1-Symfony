@@ -60,6 +60,9 @@ class EventRepository extends ServiceEntityRepository
                 ->getResult();
         }
 
+        /**
+         * @return Event[]
+        */
         public function findByEleve(Student $student)
         {
             return $this->createQueryBuilder('e')
