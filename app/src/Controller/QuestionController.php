@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Question;
 use App\Entity\QuestionReponse;
+use App\Entity\StudentReponse;
 use App\Entity\Test;
 use App\Enum\QuestionType;
 use App\Repository\TestRepository;
@@ -12,9 +13,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use function Symfony\Component\Translation\t;
+use Symfony\Component\Security\Core\Security;
 
 class QuestionController extends AbstractController {
+    private $security;
+
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+    }
     #[Route('/submit-question', name: 'submit_question')]
     public function submitQuestion(Request $request, EntityManagerInterface $entityManager, TestRepository $testRepository) {
         $testId = $request->request->get('testId');
@@ -202,6 +209,70 @@ class QuestionController extends AbstractController {
 
         // Rediriger ou retourner une réponse après la mise à jour
         return $this->redirectToRoute('quizz', ['id' => $testId]);
+    }
+
+    #[Route('/student-response/{id}', name: 'submit_student_response')]
+    public function submitStudentResponse(int $id, Request $request, EntityManagerInterface $entityManager, TestRepository $testRepository)
+    {
+        $testId = $request->request->get('testId');
+        $test = $testRepository->find($testId);
+        $user = $this->getUser()->getStudent(); // Assurez-vous que cette méthode retourne bien l'étudiant connecté
+
+        $question = $entityManager->getRepository(Question::class)->find($id);
+
+        if (!$question) {
+            throw $this->createNotFoundException('La question demandée n\'existe pas.');
+        }
+
+        // Créer une nouvelle réponse d'étudiant
+        $studentResponse = new StudentReponse();
+        $studentResponse->setStudent($user);
+        $studentResponse->setIdQuestion($question);
+        $type = $question->getType();
+
+        // Récupérer la réponse soumise en utilisant l'enum du type de question
+        $responseValues = []; // Initialiser la valeur de la réponse comme tableau
+
+        switch ($type) {
+            case QuestionType::QCM:
+                $selectedResponses = [];
+                for ($i = 1; $i <= 4; $i++) { // Assumant toujours 4 réponses possibles
+                    $responseValue = $request->request->get('response_student_' . $id . '_' . $i);
+                    if (!is_null($responseValue)) {
+                        $selectedResponses[] = $responseValue; // Ajoutez la réponse sélectionnée au tableau
+                    }
+                }
+                // Convertissez le tableau des réponses en chaîne JSON pour le stockage
+                if (!empty($selectedResponses)) {
+                    $responseValues[] = json_encode($selectedResponses);
+                }
+                break;
+            case QuestionType::UNIQUE_CHOICE:
+                // Pour UNIQUE_CHOICE, on attend l'id de la réponse choisie
+                $responseValue = $request->request->get('response_student_'.$id);
+                $responseValues = $responseValue ? [$responseValue] : [];
+                break;
+            case QuestionType::OPEN_QUESTION:
+                // Pour une question ouverte, on attend le texte de la réponse
+                $responseValue = $request->request->get('response_student_'.$id);
+                $responseValues = $responseValue ? [$responseValue] : [];
+                break;
+        }
+
+        if (!empty($responseValues)) {
+            // Assurez-vous de créer et de persister une seule nouvelle réponse par utilisateur et par question
+            $newStudentResponse = new StudentReponse();
+            $newStudentResponse->setStudent($user);
+            $newStudentResponse->setIdQuestion($question);
+            // Ici, comme on peut avoir plus d'une valeur pour les QCM, on prend toujours la première entrée de responseValues
+            $newStudentResponse->setValue($responseValues[0]);
+            $entityManager->persist($newStudentResponse);
+        }
+
+        $entityManager->flush();
+
+        // Rediriger l'utilisateur avec un message de succès
+        return $this->redirectToRoute('quizz', ['id' => $testId]); // Assurez-vous de remplacer 'some_other_route' et 'id'
     }
 
 }

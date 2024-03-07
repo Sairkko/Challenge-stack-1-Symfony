@@ -102,19 +102,18 @@ class DashboardController extends AbstractDashboardController
     {
         yield MenuItem::section('Dashboard')->setPermission('ROLE_USER');
         yield MenuItem::linkToDashboard('Accueil', 'fa fa-home')->setPermission('ROLE_STUDENT');
-        yield MenuItem::linkToCrud('Profile', 'fas fa-id-card', User::class)->setPermission('ROLE_STUDENT');
-        yield MenuItem::linkToCrud('Demande de compte formatteur', 'fas fa-id-card', AskTeacherAccount::class)->setPermission('ROLE_ADMIN');
+        yield MenuItem::linkToCrud('Profile', 'fas fa-user', User::class)->setPermission('ROLE_STUDENT');
+        yield MenuItem::linkToCrud('Demande de compte formatteur', 'fas fa-file-invoice', AskTeacherAccount::class)->setPermission('ROLE_ADMIN');
 
-        yield MenuItem::section('Gestion des formations')->setPermission('');
+        yield MenuItem::section('Gestion des formations')->setPermission('ROLE_STUDENT');
 
-        yield MenuItem::linkToCrud('Matière', 'fas fa-id-card', Module::class)->setPermission('ROLE_STUDENT');
-        yield MenuItem::linkToCrud('Cours', 'fas fa-id-card', Lesson::class)->setPermission('ROLE_TEACHER');
-        yield MenuItem::linkToCrud('Quizz', 'fas fa-id-card', Test::class)->setPermission('ROLE_STUDENT');
+        yield MenuItem::linkToCrud('Matière', 'fas fa-book', Module::class)->setPermission('ROLE_STUDENT');
+        yield MenuItem::linkToCrud('Cours', 'fas fa-book-open', Lesson::class)->setPermission('ROLE_TEACHER');
+        yield MenuItem::linkToCrud('Quizz', 'fas fa-spell-check', Test::class)->setPermission('ROLE_STUDENT');
 
         yield MenuItem::section('Gestion des étudiants')->setPermission('ROLE_TEACHER');
 
-        yield MenuItem::linkToCrud('Elève', 'fas fa-id-card', Student::class)->setPermission('ROLE_TEACHER');
-        yield MenuItem::linkToCrud('Classe', 'fas fa-id-card', StudentGroup::class)->setPermission('ROLE_TEACHER');
-
+        yield MenuItem::linkToCrud('Elève', 'fas fa-graduation-cap', Student::class)->setPermission('ROLE_TEACHER');
+        yield MenuItem::linkToCrud('Classe', 'fas fa-people-group', StudentGroup::class)->setPermission('ROLE_TEACHER');
     }
 }

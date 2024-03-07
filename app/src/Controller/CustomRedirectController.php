@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 
+use App\Entity\StudentReponse;
 use App\Repository\TestRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,27 +21,37 @@ class CustomRedirectController extends AbstractController
     }
 
     #[Route('/quizz/{id}', name: 'quizz')]
-    public function index(int $id, TestRepository $testRepository): Response
+    public function index(int $id, TestRepository $testRepository, EntityManagerInterface $entityManager, Security $security): Response
     {
-        $user = $this->security->getUser()->getRoles();
+        $user = $security->getUser(); // Assurez-vous que cela retourne l'utilisateur actuellement connecté
 
         $test = $testRepository->find($id);
 
         if (!$test) {
-            throw $this->createNotFoundException('Le Test demandée n\'existe pas');
+            throw $this->createNotFoundException('Le Test demandé n\'existe pas');
         }
 
         $title = $test->getTitle();
         $description = $test->getDescription();
-
         $questions = $test->getQuestions();
+
+        // Préparer une structure pour stocker l'état de réponse pour chaque question
+        $responsesStatus = [];
+
+        foreach ($questions as $question) {
+            // Remplacez $user->getId() par l'ID de l'étudiant, si $user représente un utilisateur et non un étudiant
+            $responseExists = $entityManager->getRepository(StudentReponse::class)->studentResponseExists($user->getStudent()->getId(), $question->getId());
+            $responsesStatus[$question->getId()] = $responseExists;
+        }
+
 
         return $this->render('EvalMe/test.html.twig', [
             'id' => $id,
             'title' => $title,
             'description' => $description,
             'questions' => $questions,
-            'role' => $user
+            'responsesStatus' => $responsesStatus,
+            'role' => $user->getRoles()
         ]);
     }
 }

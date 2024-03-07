@@ -111,12 +111,14 @@ class TestCrudController extends AbstractCrudController
                 ->remove(Crud::PAGE_INDEX, Action::EDIT)
                 ->remove(Crud::PAGE_INDEX, Action::DELETE)
             ;
+        } else{
+            $actions
+                ->add(Crud::PAGE_INDEX, $duplicateAction);
         }
 
 
         return $actions
             ->add(Crud::PAGE_INDEX, $customAction)
-            ->add(Crud::PAGE_INDEX, $duplicateAction)
             ;
     }
 
@@ -178,28 +180,37 @@ class TestCrudController extends AbstractCrudController
 
     public function duplicateQuizz(AdminContext $context)
     {
-        // Récupérer l'entité originale
         $originalQuizz = $context->getEntity()->getInstance();
 
-        // Créer une nouvelle instance de l'entité
-        $newQuizz = clone $originalQuizz; // Assurez-vous que l'entité Test gère correctement le clonage, notamment pour les relations.
+        $newQuizz = clone $originalQuizz;
+        $newQuizz->setTitle($originalQuizz->getTitle() . ' - Copie');
 
-        // Modifier le nom du quizz
-        $newQuizz->setTitle($originalQuizz->getTitle() . ' - copie');
+        foreach ($originalQuizz->getQuestions() as $originalQuestion) {
+            // Cloner la question originale
+            $newQuestion = clone $originalQuestion;
+            $newQuestion->setIdTest($newQuizz);
+            $newQuizz->addQuestion($newQuestion);
 
-        // Réinitialiser tout autre attribut si nécessaire
-        // $newQuizz->setSomeField('value');
+            foreach ($originalQuestion->getQuestionReponses() as $originalQuestionReponse) {
+                $newQuestionReponse = clone $originalQuestionReponse;
+                $newQuestionReponse->setIdQuestion($newQuestion);
+                $newQuestion->addQuestionReponse($newQuestionReponse);
+            }
+        }
 
-        // Enregistrer la nouvelle entité
         $this->entityManager->persist($newQuizz);
+        foreach ($newQuizz->getQuestions() as $newQuestion) {
+            $this->entityManager->persist($newQuestion);
+            foreach ($newQuestion->getQuestionReponses() as $newQuestionReponse) {
+                $this->entityManager->persist($newQuestionReponse);
+            }
+        }
         $this->entityManager->flush();
 
-        // Rediriger l'utilisateur vers la page d'édition du nouveau quizz
         return $this->redirect($this->adminUrlGenerator
             ->setController(self::class)
             ->setAction(Crud::PAGE_EDIT)
             ->setEntityId($newQuizz->getId())
             ->generateUrl());
     }
-
 }

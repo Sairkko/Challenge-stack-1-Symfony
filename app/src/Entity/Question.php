@@ -38,13 +38,14 @@ class Question
     #[ORM\OneToMany(mappedBy: 'id_question', targetEntity: QuestionReponse::class)]
     private Collection $questionReponses;
 
-    #[ORM\OneToOne(mappedBy: 'id_question', cascade: ['persist', 'remove'])]
-    private ?StudentReponse $studentReponse = null;
+    #[ORM\OneToMany(mappedBy: 'id_question', targetEntity: StudentReponse::class)]
+    private Collection $student_reponse;
 
     public function __construct()
     {
         $this->questionReponses = new ArrayCollection();
         $this->type = QuestionType::QCM;
+        $this->student_reponse = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -130,19 +131,32 @@ class Question
         return $this;
     }
 
-    public function getStudentReponse(): ?StudentReponse
+    /**
+     * @return Collection<int, StudentReponse>
+     */
+    public function getStudentReponse(): Collection
     {
-        return $this->studentReponse;
+        return $this->student_reponse;
     }
 
-    public function setStudentReponse(StudentReponse $studentReponse): static
+    public function addStudentReponse(StudentReponse $studentReponse): static
     {
-        // set the owning side of the relation if necessary
-        if ($studentReponse->getIdQuestion() !== $this) {
+        if (!$this->student_reponse->contains($studentReponse)) {
+            $this->student_reponse->add($studentReponse);
             $studentReponse->setIdQuestion($this);
         }
 
-        $this->studentReponse = $studentReponse;
+        return $this;
+    }
+
+    public function removeStudentReponse(StudentReponse $studentReponse): static
+    {
+        if ($this->student_reponse->removeElement($studentReponse)) {
+            // set the owning side to null (unless already changed)
+            if ($studentReponse->getIdQuestion() === $this) {
+                $studentReponse->setIdQuestion(null);
+            }
+        }
 
         return $this;
     }
