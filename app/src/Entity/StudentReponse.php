@@ -16,10 +16,6 @@ class StudentReponse
     private ?int $id = null;
 
 
-    #[ORM\OneToOne(inversedBy: 'studentReponse', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Question $id_question = null;
-
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $value = null;
 
@@ -29,6 +25,9 @@ class StudentReponse
     #[ORM\ManyToOne(inversedBy: 'student_responses')]
     private ?Student $student = null;
 
+    #[ORM\ManyToOne(inversedBy: 'student_reponse')]
+    private ?Question $id_question = null;
+
     public function __construct()
     {
         $this->is_correct_by_teacher = IsCorrectByTeacher::NULL;
@@ -37,18 +36,6 @@ class StudentReponse
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getIdQuestion(): ?Question
-    {
-        return $this->id_question;
-    }
-
-    public function setIdQuestion(Question $id_question): static
-    {
-        $this->id_question = $id_question;
-
-        return $this;
     }
 
     public function getValue(): ?string
@@ -83,6 +70,18 @@ class StudentReponse
     public function setStudent(?Student $student): static
     {
         $this->student = $student;
+
+        return $this;
+    }
+
+    public function getIdQuestion(): ?Question
+    {
+        return $this->id_question;
+    }
+
+    public function setIdQuestion(?Question $id_question): static
+    {
+        $this->id_question = $id_question;
 
         return $this;
     }
