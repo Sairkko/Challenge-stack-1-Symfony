@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Event;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
@@ -30,12 +31,31 @@ class EventCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        $groupsField = AssociationField::new('groups', 'Classes')
+        ->setFormTypeOption('by_reference', false)
+        ->setRequired(true);
+
+        if (Crud::PAGE_INDEX === $pageName) {
+            $groupsField->formatValue(function ($value, $entity) {
+                $groupNames = [];
+                foreach ($entity->getGroups() as $group) {
+                    $groupNames[] = (string) $group;
+                }
+                return join(', ', $groupNames);
+            });
+        }
+
         return [
-            TextField::new('title'),
+            TextField::new('title')
+                ->setRequired(true),
             TextField::new('description'),
-            DateTimeField::new('start_datetime'),
-            DateTimeField::new('end_datetime'),
-            TextField::new('color'),
+            $groupsField,
+            DateTimeField::new('start_datetime', 'Date début')
+                ->setRequired(true),
+            DateTimeField::new('end_datetime', 'Date fin')
+                ->setRequired(true),
+            TextField::new('color')
+            ->onlyOnForms(),
         ];
     }
 
