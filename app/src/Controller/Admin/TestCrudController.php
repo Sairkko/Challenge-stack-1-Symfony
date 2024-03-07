@@ -52,7 +52,7 @@ class TestCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $customAction = Action::new('customAction', 'Affichage Personnalisé', 'fa fa-eye')
+        $customAction = Action::new('customAction', 'Affichage Personnalisé')
             ->linkToCrudAction('myCustomAction'); // Nom de la méthode dans ce contrôleur
 
         return $actions
