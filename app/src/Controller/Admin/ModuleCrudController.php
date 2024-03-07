@@ -11,10 +11,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
-
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Security\Core\Security;
@@ -33,6 +31,12 @@ class ModuleCrudController extends AbstractCrudController
         return Module::class;
     }
 
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle(Crud::PAGE_INDEX, 'Matière')
+            ->setPageTitle(Crud::PAGE_NEW, 'Créer');
+    }
 
     public function configureFields(string $pageName): iterable
     {
@@ -45,8 +49,30 @@ class ModuleCrudController extends AbstractCrudController
                     return implode(', ', $lessons->map(function ($lesson) {
                         return $lesson->getTitle();
                     })->toArray());
-                })
+                }),
         ];
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        $actions = parent::configureActions($actions);
+
+        $actions->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+            return $action->setLabel('Créer');
+        });
+
+        $customActionLesson = Action::new('lesson', 'Voir la page Matière')
+            ->linkToCrudAction('myCustomAction');
+
+        $actions->add(Crud::PAGE_INDEX, $customActionLesson);
+
+        return $actions;
+    }
+
+    public function myCustomAction(AdminContext $context)
+    {
+        $moduleId = $context->getEntity()->getInstance()->getId();
+        return $this->redirect($this->generateUrl('app_show_matiere', ['id' => $moduleId]));
     }
 
     public function createEntity(string $entityFqcn)
@@ -60,20 +86,5 @@ class ModuleCrudController extends AbstractCrudController
         }
 
         return $module;
-    }
-
-    public function configureActions(Actions $actions): Actions
-    {
-        $customActionLesson = Action::new('lesson', 'Voir la page Matière')
-            ->linkToCrudAction('MyCustomAction');
-
-        return $actions
-            ->add(Crud::PAGE_INDEX, $customActionLesson);
-    }
-
-    public function myCustomAction(AdminContext $context)
-    {
-        $moduleId = $context->getEntity()->getInstance()->getId();
-        return $this->redirect($this->generateUrl('app_show_matiere', ['id' => $moduleId]));
     }
 }
