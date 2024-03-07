@@ -25,6 +25,12 @@ class Module
     #[ORM\OneToMany(mappedBy: 'id_module', targetEntity: Lesson::class)]
     private Collection $lessons;
 
+    #[ORM\ManyToMany(targetEntity: StudentGroup::class, mappedBy: 'modules')]
+    private Collection $studentGroups;
+
+    #[ORM\ManyToMany(targetEntity: Test::class, mappedBy: 'modules')]
+    private Collection $tests;
+
     public function __toString(): string
     {
         return $this->name;
@@ -33,6 +39,8 @@ class Module
     public function __construct()
     {
         $this->lessons = new ArrayCollection();
+        $this->studentGroups = new ArrayCollection();
+        $this->tests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -89,6 +97,60 @@ class Module
             if ($lesson->getIdModule() === $this) {
                 $lesson->setIdModule(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StudentGroup>
+     */
+    public function getStudentGroups(): Collection
+    {
+        return $this->studentGroups;
+    }
+
+    public function addStudentGroup(StudentGroup $studentGroup): static
+    {
+        if (!$this->studentGroups->contains($studentGroup)) {
+            $this->studentGroups->add($studentGroup);
+            $studentGroup->addModule($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStudentGroup(StudentGroup $studentGroup): static
+    {
+        if ($this->studentGroups->removeElement($studentGroup)) {
+            $studentGroup->removeModule($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Test>
+     */
+    public function getTests(): Collection
+    {
+        return $this->tests;
+    }
+
+    public function addTest(Test $test): static
+    {
+        if (!$this->tests->contains($test)) {
+            $this->tests->add($test);
+            $test->addModule($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTest(Test $test): static
+    {
+        if ($this->tests->removeElement($test)) {
+            $test->removeModule($this);
         }
 
         return $this;

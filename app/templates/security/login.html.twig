@@ -33,6 +33,9 @@
                         <input type="password" name="password" id="inputPassword" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2" autocomplete="current-password" required>
                     </div>
 
+                    {# If you want to control the URL the user is redirected to on success#}
+                    <input type="hidden" name="_target_path" value="{{ path('admin') }}">
+
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
                     <div>

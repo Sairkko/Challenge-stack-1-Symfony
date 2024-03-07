@@ -2,9 +2,11 @@
 
 namespace App\Entity;
 
+use App\Enum\QuizzType;
 use App\Repository\TestRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TestRepository::class)]
@@ -28,15 +30,29 @@ class Test
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
     #[ORM\OneToMany(mappedBy: 'id_test', targetEntity: Question::class)]
     private Collection $questions;
 
+    #[ORM\ManyToMany(targetEntity: Module::class, inversedBy: 'tests')]
+    private Collection $modules;
+
+    #[ORM\Column(type: Types::TEXT, length: 10, nullable: true,enumType: QuizzType::class)]
+    private QuizzType $type;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $start_date = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $end_date = null;
+
     public function __construct()
     {
         $this->questions = new ArrayCollection();
+        $this->modules = new ArrayCollection();
+        $this->type = QuizzType::NORMAL;
     }
 
     public function getId(): ?int
@@ -106,6 +122,66 @@ class Test
                 $question->setIdTest(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Module>
+     */
+    public function getModules(): Collection
+    {
+        return $this->modules;
+    }
+
+    public function addModule(Module $module): static
+    {
+        if (!$this->modules->contains($module)) {
+            $this->modules->add($module);
+        }
+
+        return $this;
+    }
+
+    public function removeModule(Module $module): static
+    {
+        $this->modules->removeElement($module);
+
+        return $this;
+    }
+
+    public function getType(): QuizzType
+    {
+        return $this->type;
+    }
+
+    public function setType(QuizzType $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getStartDate(): ?\DateTimeInterface
+    {
+        return $this->start_date;
+    }
+
+    public function setStartDate(?\DateTimeInterface $start_date): static
+    {
+        $this->start_date = $start_date;
+
+        return $this;
+    }
+
+    public function getEndDate(): ?\DateTimeInterface
+    {
+        return $this->end_date;
+    }
+
+    public function setEndDate(?\DateTimeInterface $end_date): static
+    {
+        $this->end_date = $end_date;
 
         return $this;
     }

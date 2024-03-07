@@ -8,6 +8,12 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: LessonRepository::class)]
 class Lesson
 {
+
+    public function __toString(): string
+    {
+        return $this->title;
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

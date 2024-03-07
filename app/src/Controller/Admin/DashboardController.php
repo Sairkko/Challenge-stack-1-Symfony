@@ -81,32 +81,21 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::section('Dashboard')->setPermission('');
+        yield MenuItem::section('Dashboard')->setPermission('ROLE_USER');
         yield MenuItem::linkToDashboard('Accueil', 'fa fa-home');
-        yield MenuItem::linkToCrud('Demande de compte formatteur', 'fas fa-id-card', AskTeacherAccount::class)->setPermission('');
+        yield MenuItem::linkToCrud('Profile', 'fas fa-id-card', User::class)->setPermission('ROLE_STUDENT');
+        yield MenuItem::linkToCrud('Demande de compte formatteur', 'fas fa-id-card', AskTeacherAccount::class)->setPermission('ROLE_ADMIN');
 
         yield MenuItem::section('Gestion des formations')->setPermission('');
 
-        yield MenuItem::linkToCrud('Ecole', 'fas fa-id-card', School::class)->setPermission('');
-        yield MenuItem::linkToCrud('Evenement', 'fas fa-id-card', Event::class)->setPermission('');
-        yield MenuItem::linkToCrud('Cours', 'fas fa-id-card', Lesson::class)->setPermission('');
-        yield MenuItem::linkToCrud('Cours Permission', 'fas fa-id-card', LessonPermission::class)->setPermission('');
-        yield MenuItem::linkToCrud('Matière', 'fas fa-id-card', Module::class)->setPermission('');
-        yield MenuItem::linkToCrud('Question Reponse', 'fas fa-id-card', QuestionReponse::class)->setPermission('');
+        yield MenuItem::linkToCrud('Matière', 'fas fa-id-card', Module::class)->setPermission('ROLE_STUDENT');
+        yield MenuItem::linkToCrud('Cours', 'fas fa-id-card', Lesson::class)->setPermission('ROLE_TEACHER');
+        yield MenuItem::linkToCrud('Quizz', 'fas fa-id-card', Test::class)->setPermission('ROLE_STUDENT');
 
-        yield MenuItem::linkToCrud('Eval me', 'fas fa-id-card', Test::class)->setPermission('');
+        yield MenuItem::section('Gestion des étudiants')->setPermission('ROLE_TEACHER');
 
-        yield MenuItem::section('Gestion des étudiants')->setPermission('');
+        yield MenuItem::linkToCrud('Elève', 'fas fa-id-card', Student::class)->setPermission('ROLE_TEACHER');
+        yield MenuItem::linkToCrud('Classe', 'fas fa-id-card', StudentGroup::class)->setPermission('ROLE_TEACHER');
 
-        yield MenuItem::linkToCrud('Elève', 'fas fa-id-card', Student::class)->setPermission('');
-        yield MenuItem::linkToCrud('Profile', 'fas fa-id-card', User::class)->setPermission('');
-        yield MenuItem::linkToCrud('Classe', 'fas fa-id-card', StudentGroup::class)->setPermission('');
-        yield MenuItem::linkToCrud('Elève Reponse', 'fas fa-id-card', StudentReponse::class)->setPermission('');
-
-        yield MenuItem::section('Gestion des Organismes de formation')->setPermission('');
-
-        yield MenuItem::section('Mise à disposition des cours')->setPermission('');
-
-        yield MenuItem::section('Passation d\'examens en ligne')->setPermission('');
     }
 }

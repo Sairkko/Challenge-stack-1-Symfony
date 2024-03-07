@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\StudentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StudentRepository::class)]
@@ -38,9 +37,6 @@ class Student
 
     #[ORM\ManyToOne(inversedBy: 'students')]
     private ?Teacher $id_teacher = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $profil_picture = null;
 
     #[ORM\ManyToMany(targetEntity: StudentGroup::class, inversedBy: 'students')]
     private Collection $student_groupe;
@@ -121,17 +117,6 @@ class Student
         return $this;
     }
 
-    public function getProfilPicture(): ?string
-    {
-        return $this->profil_picture;
-    }
-
-    public function setProfilPicture(?string $profil_picture): static
-    {
-        $this->profil_picture = $profil_picture;
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, StudentGroup>
