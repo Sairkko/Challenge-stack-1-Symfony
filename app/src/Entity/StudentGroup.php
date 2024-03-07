@@ -10,6 +10,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: StudentGroupRepository::class)]
 class StudentGroup
 {
+    public function __toString(): string
+    {
+        return $this->name;
+    }
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -32,11 +36,6 @@ class StudentGroup
         $this->id_school = new ArrayCollection();
         $this->students = new ArrayCollection();
         $this->events = new ArrayCollection();
-    }
-
-    public function __toString(): string
-    {
-        return $this->name;
     }
 
     public function getId(): ?int

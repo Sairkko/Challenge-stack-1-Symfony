@@ -45,6 +45,7 @@ class Student
     #[ORM\ManyToMany(targetEntity: StudentGroup::class, inversedBy: 'students')]
     private Collection $student_groupe;
 
+
     public function __construct()
     {
         $this->student_groupe = new ArrayCollection();
