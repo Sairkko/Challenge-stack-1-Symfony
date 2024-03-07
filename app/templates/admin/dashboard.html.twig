@@ -5,6 +5,42 @@
 {% endblock%}
 
 {% block content %}
+    <div id="calendar"></div>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Le DOM est chargé !");
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'fr',
+                initialView: 'dayGridMonth',
+                allDaySlot: false,
+                timeZone: 'Europe/Paris',
+                customButtons: {
+                    addButton: {
+                        color: "#00A759",
+                        text: 'Evenement +',
+                        click: function() {
+                            window.location.href = '/admin?crudAction=new&crudControllerFqcn=App%5CController%5CAdmin%5CEventCrudController';
+                        }
+                    }
+                },
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title addButton',
+                    right: 'dayGridMonth,timeGridWeek'
+                },
+                events: {{data|raw}}
+            });
+
+            calendar.on('eventClick', (e) => {
+                window.location.href = "/admin?crudAction=edit&crudControllerFqcn=App%5CController%5CAdmin%5CEventCrudController&entityId=" + e.event.id
+            });
+
+            calendar.render();
+        });
+    </script>
 
 {% endblock %}
 

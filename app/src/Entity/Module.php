@@ -10,6 +10,12 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ModuleRepository::class)]
 class Module
 {
+
+    public function __toString(): string
+    {
+        return $this->name;
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -92,5 +98,11 @@ class Module
         }
 
         return $this;
+    }
+
+    public function __toString()
+    {
+        // Supposons que vous voulez utiliser le nom du module comme représentation en chaîne
+        return $this->name;
     }
 }

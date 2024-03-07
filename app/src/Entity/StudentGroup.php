@@ -102,4 +102,12 @@ class StudentGroup
 
         return $this;
     }
+
+    public function __toString()
+    {
+        // Supposons que vous voulez utiliser le nom du module comme représentation en chaîne
+        return $this->name;
+    }
+
+
 }

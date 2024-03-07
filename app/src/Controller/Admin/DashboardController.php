@@ -16,23 +16,52 @@ use App\Entity\StudentReponse;
 use App\Entity\Teacher;
 use App\Entity\Test;
 use App\Entity\User;
+use App\Repository\EventRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 
 class DashboardController extends AbstractDashboardController
 {
+    private $eventRepository;
+    private $security;
+
+    public function __construct(EventRepository $monRepository, Security $security)
+    {
+        $this->eventRepository = $monRepository;
+        $this->security = $security;
+    }
+
     #[Route('/admin', name: 'admin')]
 
     public function index(): Response
     {
-        return $this->render('admin/dashboard.html.twig', [
-        ]);
+        $user = $this->security->getUser();
+        if ($user && $user->getTeacher() instanceof Teacher){
+            $events = $this->eventRepository->findByTeacher($user->getTeacher());
+        }else{
+            $events = [];
+        }
+        // $events = $this->eventRepository->findAll(); Si l'utilisateur est admin
+        $evenements = [];
+        foreach($events as $event){
+            $evenements[] = [
+                'id' => $event->getId(),
+                'start' => $event->getStartDatetime()->format('Y-m-d H:i:s'),
+                'end' => $event->getEndDatetime()->format('Y-m-d H:i:s'),
+                'title' => $event->getTitle(),
+                'description' => $event->getDescription(),
+            ];
+        }
+        $data = json_encode($evenements);
+        
+        return $this->render('admin/dashboard.html.twig', compact('data'));
     }
 
     public function configureAssets(): Assets
@@ -61,7 +90,6 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Cours', 'fas fa-id-card', Lesson::class)->setPermission('');
         yield MenuItem::linkToCrud('Cours Permission', 'fas fa-id-card', LessonPermission::class)->setPermission('');
         yield MenuItem::linkToCrud('Matière', 'fas fa-id-card', Module::class)->setPermission('');
-        yield MenuItem::linkToCrud('Question', 'fas fa-id-card', Question::class)->setPermission('');
         yield MenuItem::linkToCrud('Question Reponse', 'fas fa-id-card', QuestionReponse::class)->setPermission('');
 
         yield MenuItem::linkToCrud('Eval me', 'fas fa-id-card', Test::class)->setPermission('');
