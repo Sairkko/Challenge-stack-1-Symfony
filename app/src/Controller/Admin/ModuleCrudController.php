@@ -73,7 +73,7 @@ class ModuleCrudController extends AbstractCrudController
 
     public function myCustomAction(AdminContext $context)
     {
-        $testId = $context->getEntity()->getInstance()->getId();
-        return $this->redirect($this->generateUrl('some_route', ['id' => $testId]));
+        $moduleId = $context->getEntity()->getInstance()->getId();
+        return $this->redirect($this->generateUrl('app_show_matiere', ['id' => $moduleId]));
     }
 }

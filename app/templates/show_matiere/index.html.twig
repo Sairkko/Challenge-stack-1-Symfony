@@ -3,18 +3,22 @@
 {% block title %}Hello ShowMatiereController!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <div class="container mx-auto px-4">
+        <div class="text-center py-6">
+            <h1 class="text-4xl font-semibold text-gray-800">{{ name }}</h1>
+            <p class="text-md text-gray-600">{{ teacherName }}</p>
+        </div>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'C:/Users/jerem/Challenge-stack-1-Symfony/app/src/Controller/ShowMatiereController.php'|file_link(0) }}">src/Controller/ShowMatiereController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'C:/Users/jerem/Challenge-stack-1-Symfony/app/templates/show_matiere/index.html.twig'|file_link(0) }}">templates/show_matiere/index.html.twig</a></code></li>
-    </ul>
-</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for lesson in lessons %}
+                <div class="card bg-gray-50 hover:shadow-lg rounded" onclick="location.href='/show/lesson/{{ lesson.id }}';" style="cursor: pointer;">
+                    <div class="m-4">
+                        <h2 class="text-xl font-bold text-gray-800">{{ lesson.title }}</h2>
+                        <p class="text-gray-600">{{ lesson.description | default('Pas de description.') }}</p>
+                        <p class="text-gray-500">Goal: {{ lesson.goal | default('Pas d\'objectif renseignée.') }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}
