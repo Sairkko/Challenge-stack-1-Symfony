@@ -108,7 +108,7 @@ class ModuleCrudController extends AbstractCrudController
     {
         $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
 
-        if ($this->getUser()->getRoles() == "ROLE_TEACHER") {
+        if (in_array('ROLE_TEACHER',$this->getUser()->getRoles())) {
             $teacherId = $this->getUser()->getTeacher();
 
             $qb->andWhere('entity.id_teacher = :teacherId')

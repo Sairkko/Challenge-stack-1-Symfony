@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Test;
 use App\Enum\QuizzType;
+use App\Repository\StudentGroupRepository;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
@@ -42,6 +43,7 @@ class TestCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        $teacherId = $this->getUser()->getTeacher();
         return [
             TextField::new('title', 'Titre'),
             TextField::new('description', 'Description'),
@@ -53,6 +55,16 @@ class TestCrudController extends AbstractCrudController
                         return $module->getName();
                     })->toArray());
                 }),
+            AssociationField::new('groups', 'Classes')
+            ->setFormTypeOptions([
+                'by_reference' => false,
+                // Personnalisez la requête pour afficher uniquement les étudiants créés par le professeur
+                'query_builder' => function (StudentGroupRepository $studentGroupRepository) use ($teacherId) {
+                    return $studentGroupRepository->createQueryBuilder('s')
+                        ->where('s.teacher = :teacherId')
+                        ->setParameter('teacherId', $teacherId);
+                }
+            ]),
             ChoiceField::new('type', 'Type de Quizz')
                 ->setChoices([
                     'QCM point négatif' => QuizzType::QCMN,
@@ -124,7 +136,7 @@ class TestCrudController extends AbstractCrudController
     {
         $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
 
-        if ($this->getUser()->getRoles() == "ROLE_TEACHER") {
+        if (in_array('ROLE_TEACHER',$this->getUser()->getRoles())) {
             $teacherId = $this->getUser()->getTeacher();
 
             $qb->andWhere('entity.id_teacher = :teacherId')

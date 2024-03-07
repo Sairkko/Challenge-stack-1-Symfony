@@ -34,12 +34,21 @@ class StudentGroup
     #[ORM\ManyToMany(targetEntity: Module::class, inversedBy: 'studentGroups')]
     private Collection $modules;
 
+    #[ORM\ManyToMany(targetEntity: Test::class, mappedBy: 'groups')]
+    private Collection $tests;
+
+    #[ORM\ManyToOne(inversedBy: 'studentGroups')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Teacher $teacher = null;
+
+    
     public function __construct()
     {
         $this->id_school = new ArrayCollection();
         $this->students = new ArrayCollection();
         $this->events = new ArrayCollection();
         $this->modules = new ArrayCollection();
+        $this->tests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -157,6 +166,45 @@ class StudentGroup
     public function removeModule(Module $module): static
     {
         $this->modules->removeElement($module);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Test>
+     */
+    public function getTests(): Collection
+    {
+        return $this->tests;
+    }
+
+    public function addTest(Test $test): static
+    {
+        if (!$this->tests->contains($test)) {
+            $this->tests->add($test);
+            $test->addGroup($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTest(Test $test): static
+    {
+        if ($this->tests->removeElement($test)) {
+            $test->removeGroup($this);
+        }
+
+        return $this;
+    }
+
+    public function getTeacher(): ?Teacher
+    {
+        return $this->teacher;
+    }
+
+    public function setTeacher(?Teacher $teacher): static
+    {
+        $this->teacher = $teacher;
 
         return $this;
     }

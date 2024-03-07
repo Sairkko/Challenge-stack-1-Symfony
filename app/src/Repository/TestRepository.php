@@ -2,6 +2,8 @@
 
 namespace App\Repository;
 
+use App\Entity\Student;
+use App\Entity\Teacher;
 use App\Entity\Test;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -45,4 +47,30 @@ class TestRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    /**
+     * @return Test[]
+    */
+    public function findByTeacher(Teacher $teacher)
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.id_teacher = :teacher')
+            ->setParameter('teacher', $teacher->getId())
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return Test[]
+    */
+    public function findByEleve(Student $student)
+    {
+        return $this->createQueryBuilder('e')
+        ->innerJoin('e.groups', 'g')
+        ->innerJoin('g.students', 's')
+        ->where('s.id = :studentId')
+        ->setParameter('studentId', $student->getId())
+        ->getQuery()
+        ->getResult();
+    }
 }

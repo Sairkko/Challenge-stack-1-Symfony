@@ -40,6 +40,9 @@ class Teacher
     #[ORM\OneToMany(mappedBy: 'id_teacher', targetEntity: Student::class)]
     private Collection $students;
 
+    #[ORM\OneToMany(mappedBy: 'teacher', targetEntity: StudentGroup::class)]
+    private Collection $studentGroups;
+
     public function __construct()
     {
         $this->events = new ArrayCollection();
@@ -47,6 +50,7 @@ class Teacher
         $this->lessons = new ArrayCollection();
         $this->tests = new ArrayCollection();
         $this->students = new ArrayCollection();
+        $this->studentGroups = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -234,6 +238,36 @@ class Teacher
             // set the owning side to null (unless already changed)
             if ($student->getIdTeacher() === $this) {
                 $student->setIdTeacher(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StudentGroup>
+     */
+    public function getStudentGroups(): Collection
+    {
+        return $this->studentGroups;
+    }
+
+    public function addStudentGroup(StudentGroup $studentGroup): static
+    {
+        if (!$this->studentGroups->contains($studentGroup)) {
+            $this->studentGroups->add($studentGroup);
+            $studentGroup->setTeacher($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStudentGroup(StudentGroup $studentGroup): static
+    {
+        if ($this->studentGroups->removeElement($studentGroup)) {
+            // set the owning side to null (unless already changed)
+            if ($studentGroup->getTeacher() === $this) {
+                $studentGroup->setTeacher(null);
             }
         }
 

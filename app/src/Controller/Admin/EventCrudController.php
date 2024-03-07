@@ -65,16 +65,18 @@ class EventCrudController extends AbstractCrudController
         }
 
         return [
-            TextField::new('title', 'Titre')
+            TextField::new('title')
                 ->setRequired(true),
-            TextField::new('description'),
+            TextField::new('description')
+                ->setRequired(true),
             $groupsField,
             DateTimeField::new('start_datetime', 'Date début')
                 ->setRequired(true),
             DateTimeField::new('end_datetime', 'Date fin')
                 ->setRequired(true),
             TextField::new('color', 'Couleur')
-            ->onlyOnForms(),
+                ->setRequired(true)
+                ->onlyOnForms(),
         ];
     }
 

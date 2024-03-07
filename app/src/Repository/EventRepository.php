@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Event;
+use App\Entity\Student;
 use App\Entity\Teacher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -57,5 +58,19 @@ class EventRepository extends ServiceEntityRepository
                 ->setParameter('teacher', $teacher->getId())
                 ->getQuery()
                 ->getResult();
+        }
+
+        /**
+         * @return Event[]
+        */
+        public function findByEleve(Student $student)
+        {
+            return $this->createQueryBuilder('e')
+            ->innerJoin('e.groups', 'g')
+            ->innerJoin('g.students', 's')
+            ->where('s.id = :studentId')
+            ->setParameter('studentId', $student->getId())
+            ->getQuery()
+            ->getResult();
         }
 }
