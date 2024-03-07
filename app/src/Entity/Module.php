@@ -10,12 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ModuleRepository::class)]
 class Module
 {
-
-    public function __toString(): string
-    {
-        return $this->name;
-    }
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -30,6 +24,11 @@ class Module
 
     #[ORM\OneToMany(mappedBy: 'id_module', targetEntity: Lesson::class)]
     private Collection $lessons;
+
+    public function __toString(): string
+    {
+        return $this->name;
+    }
 
     public function __construct()
     {
@@ -94,5 +93,4 @@ class Module
 
         return $this;
     }
-
 }

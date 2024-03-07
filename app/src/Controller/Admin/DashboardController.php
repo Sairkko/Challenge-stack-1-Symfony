@@ -97,6 +97,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Gestion des étudiants')->setPermission('');
 
         yield MenuItem::linkToCrud('Elève', 'fas fa-id-card', Student::class)->setPermission('');
+        yield MenuItem::linkToCrud('Profile', 'fas fa-id-card', User::class)->setPermission('');
         yield MenuItem::linkToCrud('Classe', 'fas fa-id-card', StudentGroup::class)->setPermission('');
         yield MenuItem::linkToCrud('Elève Reponse', 'fas fa-id-card', StudentReponse::class)->setPermission('');
 
