@@ -21,7 +21,6 @@ use Symfony\Component\Security\Core\Security;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use Symfony\Component\HttpFoundation\Response;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class TestCrudController extends AbstractCrudController
 {
@@ -46,8 +45,6 @@ class TestCrudController extends AbstractCrudController
         return [
             TextField::new('title', 'Titre'),
             TextField::new('description', 'Description'),
-        ];
-    }
             AssociationField::new('modules', 'Matière')
                 ->setCrudController(ModuleCrudController::class)
                 ->formatValue(function ($value, $entity) {
@@ -56,7 +53,6 @@ class TestCrudController extends AbstractCrudController
                         return $module->getName();
                     })->toArray());
                 }),
-//            mettre type et dates
             ChoiceField::new('type', 'Type de Quizz')
                 ->setChoices([
                     'QCM point négatif' => QuizzType::QCMN,
@@ -66,6 +62,7 @@ class TestCrudController extends AbstractCrudController
             DateTimeField::new('endDate', 'Date de fin')
         ];
     }
+    
 
 
     public function createEntity(string $entityFqcn)

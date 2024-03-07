@@ -53,8 +53,9 @@ class ModuleCrudController extends AbstractCrudController
                     return implode(', ', $lessons->map(function ($lesson) {
                         return $lesson->getTitle();
                     })->toArray());
-                }),
-            ->onlyOnIndex()
+                })
+                ->onlyOnIndex(),
+                
         ];
     }
 
@@ -81,7 +82,7 @@ class ModuleCrudController extends AbstractCrudController
             ;
         }
 
-        return $actions
+        return $actions;
     }
 
     public function myCustomAction(AdminContext $context)
