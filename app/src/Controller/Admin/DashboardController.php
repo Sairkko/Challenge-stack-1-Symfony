@@ -43,8 +43,10 @@ class DashboardController extends AbstractDashboardController
     public function index(): Response
     {
         $user = $this->security->getUser();
-        if ($user && $user->getTeacher() instanceof Teacher){
+        if ($user && in_array('ROLE_TEACHER', $user->getRoles())){
             $events = $this->eventRepository->findByTeacher($user->getTeacher());
+        }else if ($user && in_array('ROLE_STUDENT', $user->getRoles())){
+            $events = $this->eventRepository->findByEleve($user->getStudent());
         }else{
             $events = [];
         }
