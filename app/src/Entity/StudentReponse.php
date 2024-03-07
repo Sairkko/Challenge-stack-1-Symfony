@@ -15,9 +15,6 @@ class StudentReponse
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\OneToOne(inversedBy: 'studentReponse', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Student $id_student = null;
 
     #[ORM\OneToOne(inversedBy: 'studentReponse', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
@@ -29,6 +26,9 @@ class StudentReponse
     #[ORM\Column(type: Types::TEXT, length: 10, enumType: IsCorrectByTeacher::class)]
     private IsCorrectByTeacher $is_correct_by_teacher;
 
+    #[ORM\ManyToOne(inversedBy: 'student_responses')]
+    private ?Student $student = null;
+
     public function __construct()
     {
         $this->is_correct_by_teacher = IsCorrectByTeacher::NULL;
@@ -37,18 +37,6 @@ class StudentReponse
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getIdStudent(): ?Student
-    {
-        return $this->id_student;
-    }
-
-    public function setIdStudent(Student $id_student): static
-    {
-        $this->id_student = $id_student;
-
-        return $this;
     }
 
     public function getIdQuestion(): ?Question
@@ -83,6 +71,18 @@ class StudentReponse
     public function setIsCorrectByTeacher(IsCorrectByTeacher $is_correct_by_teacher): static
     {
         $this->is_correct_by_teacher = $is_correct_by_teacher;
+
+        return $this;
+    }
+
+    public function getStudent(): ?Student
+    {
+        return $this->student;
+    }
+
+    public function setStudent(?Student $student): static
+    {
+        $this->student = $student;
 
         return $this;
     }

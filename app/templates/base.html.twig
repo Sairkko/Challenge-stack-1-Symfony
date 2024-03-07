@@ -21,7 +21,7 @@
             <div class="flex space-x-4">
                 <a href="/equipe" class="hover:bg-gray-700 p-2 rounded">Equipe</a>
                 {% if is_granted ('ROLE_STUDENT') %}
-                <a href="/admin" class="hover:bg-gray-700 p-2 rounded">Dashboard</a>
+                <a href="/dashboard" class="hover:bg-gray-700 p-2 rounded">Dashboard</a>
                 {% endif %}
                 {% if app.user %}
                     <a href="/logout" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Déconnexion</a>

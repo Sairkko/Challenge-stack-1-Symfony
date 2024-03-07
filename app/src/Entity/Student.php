@@ -32,19 +32,20 @@ class Student
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $last_name = null;
 
-    #[ORM\OneToOne(mappedBy: 'id_student', cascade: ['persist', 'remove'])]
-    private ?StudentReponse $studentReponse = null;
-
     #[ORM\ManyToOne(inversedBy: 'students')]
     private ?Teacher $id_teacher = null;
 
     #[ORM\ManyToMany(targetEntity: StudentGroup::class, inversedBy: 'students')]
     private Collection $student_groupe;
 
+    #[ORM\OneToMany(mappedBy: 'student', targetEntity: StudentReponse::class)]
+    private Collection $student_responses;
+
 
     public function __construct()
     {
         $this->student_groupe = new ArrayCollection();
+        $this->student_responses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -88,23 +89,6 @@ class Student
         return $this;
     }
 
-    public function getStudentReponse(): ?StudentReponse
-    {
-        return $this->studentReponse;
-    }
-
-    public function setStudentReponse(StudentReponse $studentReponse): static
-    {
-        // set the owning side of the relation if necessary
-        if ($studentReponse->getIdStudent() !== $this) {
-            $studentReponse->setIdStudent($this);
-        }
-
-        $this->studentReponse = $studentReponse;
-
-        return $this;
-    }
-
     public function getIdTeacher(): ?Teacher
     {
         return $this->id_teacher;
@@ -138,6 +122,36 @@ class Student
     public function removeStudentGroupe(StudentGroup $studentGroupe): static
     {
         $this->student_groupe->removeElement($studentGroupe);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StudentReponse>
+     */
+    public function getStudentResponses(): Collection
+    {
+        return $this->student_responses;
+    }
+
+    public function addStudentResponse(StudentReponse $studentResponse): static
+    {
+        if (!$this->student_responses->contains($studentResponse)) {
+            $this->student_responses->add($studentResponse);
+            $studentResponse->setStudent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStudentResponse(StudentReponse $studentResponse): static
+    {
+        if ($this->student_responses->removeElement($studentResponse)) {
+            // set the owning side to null (unless already changed)
+            if ($studentResponse->getStudent() === $this) {
+                $studentResponse->setStudent(null);
+            }
+        }
 
         return $this;
     }
