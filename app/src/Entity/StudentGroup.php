@@ -133,6 +133,4 @@ class StudentGroup
 
         return $this;
     }
-
-
 }
