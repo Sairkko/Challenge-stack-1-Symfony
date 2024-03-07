@@ -3,21 +3,18 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Lesson;
-use App\Entity\Module;
-use Doctrine\ORM\EntityManagerInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use App\Repository\ModuleRepository;
+use App\Repository\StudentRepository;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Type\FileUploadType;
-use Symfony\Component\DomCrawler\Field\FileFormField;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\File\File;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -41,6 +38,8 @@ class LessonCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        $teacherId = $this->getUser()->getTeacher();
+
         return [
             TextField::new('title', 'Titre'),
             TextField::new('goal', 'Objectif'),
@@ -61,7 +60,17 @@ class LessonCrudController extends AbstractCrudController
             ->setUploadedFileNamePattern('[randomhash].[extension]')
             ->setRequired(false)
             ->onlyOnForms(),
+
             AssociationField::new('id_module', 'Matière')
+                ->setFormTypeOptions([
+                    'by_reference' => false,
+                    // Personnalisez la requête pour afficher uniquement les étudiants créés par le professeur
+                    'query_builder' => function (ModuleRepository $moduleRepository) use ($teacherId) {
+                        return $moduleRepository->createQueryBuilder('m')
+                            ->where('m.id_teacher = :teacherId')
+                            ->setParameter('teacherId', $teacherId);
+                    }
+                ])
         ];
     }
 
@@ -136,5 +145,20 @@ class LessonCrudController extends AbstractCrudController
     // {
     //     return md5(uniqid());
     // }
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        // Supposons que vous avez un moyen d'obtenir l'ID de l'enseignant actuel,
+        // par exemple à partir de l'utilisateur actuellement connecté
+        $teacherId = $this->getUser()->getTeacher(); // Remplacez ceci par le code approprié pour obtenir l'ID de l'enseignant
+
+        // Filtrer les étudiants pour n'inclure que ceux associés à l'enseignant spécifique
+        $qb->andWhere('entity.id_teacher = :teacherId')
+            ->setParameter('teacherId', $teacherId);
+
+        return $qb;
+    }
+
 
 }

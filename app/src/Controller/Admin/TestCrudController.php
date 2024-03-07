@@ -3,9 +3,20 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Test;
+use App\Enum\QuizzType;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Security;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
@@ -15,10 +26,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 class TestCrudController extends AbstractCrudController
 {
     private $security;
+    private $authorizationChecker;
 
-    public function __construct(Security $security)
+
+    public function __construct(Security $security, AuthorizationCheckerInterface $authorizationChecker)
     {
         $this->security = $security;
+        $this->authorizationChecker = $authorizationChecker;
     }
 
     public static function getEntityFqcn(): string
@@ -34,6 +48,25 @@ class TestCrudController extends AbstractCrudController
             TextField::new('description', 'Description'),
         ];
     }
+            AssociationField::new('modules', 'Matière')
+                ->setCrudController(ModuleCrudController::class)
+                ->formatValue(function ($value, $entity) {
+                    $modules = $entity->getModules();
+                    return implode(', ', $modules->map(function ($module) {
+                        return $module->getName();
+                    })->toArray());
+                }),
+//            mettre type et dates
+            ChoiceField::new('type', 'Type de Quizz')
+                ->setChoices([
+                    'QCM point négatif' => QuizzType::QCMN,
+                    'QCM normal' => QuizzType::NORMAL,
+                ]),
+            DateTimeField::new('startDate', 'Date de début'),
+            DateTimeField::new('endDate', 'Date de fin')
+        ];
+    }
+
 
     public function createEntity(string $entityFqcn)
     {
@@ -53,6 +86,16 @@ class TestCrudController extends AbstractCrudController
     {
         $customAction = Action::new('customAction', 'Affichage Personnalisé')
             ->linkToCrudAction('myCustomAction'); // Nom de la méthode dans ce contrôleur
+
+
+        if (!$this->authorizationChecker->isGranted('ROLE_TEACHER')) {
+            $actions
+                ->remove(Crud::PAGE_INDEX, Action::NEW)
+                ->remove(Crud::PAGE_INDEX, Action::EDIT)
+                ->remove(Crud::PAGE_INDEX, Action::DELETE)
+            ;
+        }
+
 
         return $actions
             ->add(Crud::PAGE_INDEX, $customAction);
@@ -78,6 +121,40 @@ class TestCrudController extends AbstractCrudController
             ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
                 return $action->setLabel('Créer');
             });
+    }
+
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        if ($this->getUser()->getRoles() == "ROLE_TEACHER") {
+            $teacherId = $this->getUser()->getTeacher();
+
+            $qb->andWhere('entity.id_teacher = :teacherId')
+                ->setParameter('teacherId', $teacherId);
+        } else {
+            // Récupérez la collection des groupes d'étudiants
+            $studentGroups = $this->getUser()->getStudent()->getStudentGroupe();
+
+            $modulesIds = [];
+            // Itérez sur chaque groupe d'étudiants
+            foreach ($studentGroups as $group) {
+                // Pour chaque groupe, obtenez la collection des modules
+                foreach ($group->getModules() as $module) {
+                    // Ajoutez l'ID de chaque module à la liste des IDs
+                    $modulesIds[] = $module->getId();
+                }
+            }
+
+            // Assurez-vous qu'il y a des IDs de modules avant de les ajouter à la requête
+            if (!empty($modulesIds)) {
+                $qb->join('entity.modules', 'm')
+                    ->andWhere($qb->expr()->in('m.id', ':modulesIds'))
+                    ->setParameter('modulesIds', $modulesIds);
+            }
+        }
+
+        return $qb;
     }
 
 }

@@ -31,11 +31,15 @@ class StudentGroup
     #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'groups')]
     private Collection $events;
 
+    #[ORM\ManyToMany(targetEntity: Module::class, inversedBy: 'studentGroups')]
+    private Collection $modules;
+
     public function __construct()
     {
         $this->id_school = new ArrayCollection();
         $this->students = new ArrayCollection();
         $this->events = new ArrayCollection();
+        $this->modules = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -129,6 +133,30 @@ class StudentGroup
         if ($this->events->removeElement($event)) {
             $event->removeGroup($this);
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Module>
+     */
+    public function getModules(): Collection
+    {
+        return $this->modules;
+    }
+
+    public function addModule(Module $module): static
+    {
+        if (!$this->modules->contains($module)) {
+            $this->modules->add($module);
+        }
+
+        return $this;
+    }
+
+    public function removeModule(Module $module): static
+    {
+        $this->modules->removeElement($module);
 
         return $this;
     }

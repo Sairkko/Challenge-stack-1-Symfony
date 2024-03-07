@@ -2,28 +2,31 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Lesson;
 use App\Entity\Module;
-use App\Entity\Test;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class ModuleCrudController extends AbstractCrudController
 {
     private $security;
+    private $authorizationChecker;
 
-    public function __construct(Security $security)
+    public function __construct(Security $security, AuthorizationCheckerInterface $authorizationChecker)
     {
         $this->security = $security;
+        $this->authorizationChecker = $authorizationChecker;
     }
 
     public static function getEntityFqcn(): string
@@ -40,6 +43,7 @@ class ModuleCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+
         return [
             TextField::new('name', 'Nom de la matière'),
             AssociationField::new('lessons', 'Leçons')
@@ -50,6 +54,7 @@ class ModuleCrudController extends AbstractCrudController
                         return $lesson->getTitle();
                     })->toArray());
                 }),
+            ->onlyOnIndex()
         ];
     }
 
@@ -67,6 +72,16 @@ class ModuleCrudController extends AbstractCrudController
         $actions->add(Crud::PAGE_INDEX, $customActionLesson);
 
         return $actions;
+        if (!$this->authorizationChecker->isGranted('ROLE_TEACHER')) {
+            $actions
+                ->remove(Crud::PAGE_INDEX, Action::NEW)
+                ->remove(Crud::PAGE_INDEX, Action::EDIT)
+                ->remove(Crud::PAGE_INDEX, Action::DELETE)
+                ->add(Crud::PAGE_INDEX, $customActionLesson)
+            ;
+        }
+
+        return $actions
     }
 
     public function myCustomAction(AdminContext $context)
@@ -87,4 +102,30 @@ class ModuleCrudController extends AbstractCrudController
 
         return $module;
     }
+
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+
+        if ($this->getUser()->getRoles() == "ROLE_TEACHER") {
+            $teacherId = $this->getUser()->getTeacher();
+
+            $qb->andWhere('entity.id_teacher = :teacherId')
+                ->setParameter('teacherId', $teacherId);
+        } else {
+            $studentGroups = $this->getUser()->getStudent()->getStudentGroupe();
+            $studentGroupIds = [];
+
+            foreach ($studentGroups as $group) {
+                $studentGroupIds[] = $group->getId();
+            }
+
+            $qb->join('entity.studentGroups', 'sg')
+                ->andWhere($qb->expr()->in('sg.id', ':studentGroupIds'))
+                ->setParameter('studentGroupIds', $studentGroupIds);
+        }
+
+        return $qb;
+    }
+
 }
