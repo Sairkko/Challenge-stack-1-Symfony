@@ -4,6 +4,7 @@ namespace App\Controller;
 
 
 use App\Entity\StudentReponse;
+use App\Repository\StudentRepository;
 use App\Repository\TestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -65,5 +66,112 @@ class CustomRedirectController extends AbstractController
     {
         return $this->render('EvalMe/endQuizz.html.twig', [
         ]);
+    }
+    #[Route('/test/answers/{id}', name: 'answers_page')]
+    public function answers(int $id, TestRepository $testRepository): Response
+    {
+        // Récupérez des données supplémentaires si nécessaire
+        $test = $testRepository->find($id);
+
+        if (!$test) {
+            throw $this->createNotFoundException('Le Test demandée n\'existe pas');
+        }
+
+        $title = $test->getTitle();
+        $description = $test->getDescription();
+
+        $questions = $test->getQuestions();
+        $questionIds = [];
+        foreach($questions as $question){
+            $questionIds[] = $question->getId();
+        }
+        $groups = $test->getGroups();
+        $students = [];
+        foreach($groups as $group){
+            foreach($group->getStudents() as $student){
+                $allStudentsReponses = $student->getStudentResponses();
+
+                $thisTestReponses = $allStudentsReponses->filter(function($reponse) use ($questionIds) {
+                    return in_array($reponse->getIdQuestion()->getId(), $questionIds);
+                });
+
+                $correctionPercentage = 0;
+                if($thisTestReponses->count() != 0){
+                    $totalResponsesCount = $thisTestReponses->count();
+                    if ($totalResponsesCount > 0) {
+                        $notTotoResponsesCount = $thisTestReponses->filter(function($response) {
+                        return $response->getIsCorrectByTeacher() !== 'null';
+                    })->count();
+
+                $correctionPercentage = round($notTotoResponsesCount / $totalResponsesCount * 100);
+            } else {
+                $correctionPercentage = 0; 
+            }
+
+                }
+                $students[] = [
+                    'id' => $student->getId(),
+                    'nom' => $student->getName(),
+                    'prenom' => $student->getLastName(),
+                    'picture' => $student->getIdUser()->getProfilPicture(),
+                    'reponses' => count($thisTestReponses),
+                    'correctionPercentage' => $correctionPercentage,
+                    'totalPoints' => 0
+                ];
+            }
+        }
+        foreach($questions as $question){
+            $question->getQuestionReponses();
+        }
+
+        return $this->render('EvalMe/answers.html.twig', [
+            'id' => $id,
+            'title' => $title,
+            'description' => $description,
+            'questions' => $questions,
+            'students' => $students
+        ]);
+    }
+
+    #[Route('/test/answers/{testId}/student/{studentId}', name: 'student_answers_page')]
+    public function studentAnswers(int $testId, int $studentId, TestRepository $testRepository, StudentRepository $studentRepository): Response
+    {
+        $test = $testRepository->find($testId);
+        $student = $studentRepository->find($studentId);
+
+        if (!$test) {
+            throw $this->createNotFoundException('Le Test demandée n\'existe pas');
+        }
+        
+        $title = $test->getTitle();
+        $description = $test->getDescription();
+        $allStudentsReponses = $student->getStudentResponses();
+        $questions = $test->getQuestions();
+        $data = [
+            'id' => $test->getId(),
+            'title' => $title,
+            'description' => $description,
+            'questions' => []
+        ];
+        foreach($questions as $question){
+            $studentReponse = $allStudentsReponses->filter(function($reponse) use ($question) {return $reponse->getIdQuestion() === $question;})[0];
+            $studentReponseValue = null;
+            if($studentReponse !== null){
+                $studentReponseValue = ['value' => $studentReponse->getValue()];
+            }
+            
+            $el = [];
+            $el[] = $studentReponseValue;
+            $data['questions'][] = [
+                'id'=> $question->getId(),
+                'question' => $question,
+                'questionReponses' => $question->getQuestionReponses(),
+                'studentReponse' => $studentReponseValue,
+                'is_validated' => true
+            ];
+        }
+        dd($el);
+        
+        return $this->render('EvalMe/studentAnswers.html.twig', $data);
     }
 }

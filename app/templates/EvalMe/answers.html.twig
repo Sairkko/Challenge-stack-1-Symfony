@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réponses au test{% endblock %}
+
+{% block javascripts %}
+    
+{% endblock %}
+
+
+{% block body %}
+    <div class="bg-gray-100">
+        <div class="mt-8 sm:mx-auto sm:w-full">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Titre: {{ title }}</h3>
+                <h3 class="mt-2 text-sm text-gray-600">Description: {{ description }}</h3>
+            </div>
+        </div>
+        <div class="container mx-auto mt-8">
+            <h1 class="text-xl font-semibold text-gray-800">Liste des Élèves</h1>
+            <div class="mt-6">
+                <table class="min-w-full table-auto">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th></th>
+                            <th class="px-4 py-2 text-left text-gray-600">Nom</th>
+                            <th class="px-4 py-2 text-left text-gray-600">Prénom</th>
+                            <th class="px-4 py-2 text-left text-gray-600">Nombre de réponses</th>
+                            <th class="px-4 py-2 text-left text-gray-600">Correction</th>
+                            <th class="px-4 py-2 text-center text-gray-600">Note</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white">
+                        {% for student in students %}
+                            <tr class="border-b">
+                                <td class="px-4 py-2 text-center">
+                                    <img src="{{ student.picture }}" alt="Photo de profil" class="h-10 w-10 rounded-full object-cover mx-auto">
+                                </td>
+                                <td class="px-4 py-2 text-gray-700">{{ student.nom }}</td>
+                                <td class="px-4 py-2 text-gray-700">{{ student.prenom }}</td>
+                                <td class="px-4 py-2 text-gray-700">{{ student.reponses}}/{{questions|length}}</td>
+                                <td class="px-4 py-2 text-gray-700">
+                                    <a href="{{id}}/student/{{ student.id }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-block text-center">
+                                        Corriger
+                                    </a>
+                                </td>
+                                <td class="px-4 py-2 text-center text-gray-700">...</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <div>
+
+
+{% endblock %}

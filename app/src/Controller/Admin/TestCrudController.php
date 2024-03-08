@@ -98,8 +98,11 @@ class TestCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $customAction = Action::new('customAction', 'Affichage Personnalisé')
+        $customAction = Action::new('customAction', 'Voir les questions')
             ->linkToCrudAction('myCustomAction'); // Nom de la méthode dans ce contrôleur
+
+        $customAction2 = Action::new('customAction2', 'Voir les réponses')
+            ->linkToCrudAction('getResponseAction'); // Nom de la méthode dans ce contrôleur
 
         $duplicateAction = Action::new('duplicateQuizz', 'Dupliquer')
             ->linkToCrudAction('duplicateQuizz');
@@ -113,13 +116,13 @@ class TestCrudController extends AbstractCrudController
             ;
         } else{
             $actions
-                ->add(Crud::PAGE_INDEX, $duplicateAction);
+                ->add(Crud::PAGE_INDEX, $duplicateAction)
+                ->add(Crud::PAGE_INDEX, $customAction2);
         }
 
 
         return $actions
-            ->add(Crud::PAGE_INDEX, $customAction)
-            ;
+            ->add(Crud::PAGE_INDEX, $customAction);
     }
 
     public function myCustomAction(AdminContext $context)
@@ -135,6 +138,14 @@ class TestCrudController extends AbstractCrudController
             ->setPageTitle(Crud::PAGE_INDEX, 'Quizz')
             ->setPageTitle(Crud::PAGE_NEW, 'Créer');
     }
+
+
+    public function getResponseAction(AdminContext $context)
+    {
+        $testId = $context->getEntity()->getInstance()->getId();
+        return $this->redirect($this->generateUrl('answers_page', ['id' => $testId]));
+    }
+    
 
     public function configureAction(Actions $actions): Actions
     {
