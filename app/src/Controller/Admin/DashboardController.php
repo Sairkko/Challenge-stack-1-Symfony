@@ -2,23 +2,87 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\AskTeacherAccount;
+use App\Entity\Event;
+use App\Entity\Lesson;
+use App\Entity\LessonPermission;
+use App\Entity\Module;
+use App\Entity\Question;
+use App\Entity\QuestionReponse;
+use App\Entity\School;
+use App\Entity\Student;
+use App\Entity\StudentGroup;
+use App\Entity\StudentReponse;
+use App\Entity\Teacher;
+use App\Entity\Test;
+use App\Entity\User;
+use App\Repository\EventRepository;
+use App\Repository\TestRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 
 class DashboardController extends AbstractDashboardController
 {
-    #[Route('/admin', name: 'admin')]
+    private $eventRepository;
+    private $testRepository;
+    private $security;
+
+    public function __construct(TestRepository $testRepository, EventRepository $monRepository, Security $security)
+    {
+        $this->eventRepository = $monRepository;
+        $this->testRepository = $testRepository;
+        $this->security = $security;
+    }
+
+    #[Route('/dashboard', name: 'admin')]
 
     public function index(): Response
     {
-        return $this->render('admin/dashboard.html.twig', [
-        ]);
+        $user = $this->security->getUser();
+        if ($user && in_array('ROLE_TEACHER', $user->getRoles())){
+            $events = $this->eventRepository->findByTeacher($user->getTeacher());
+            $tests = $this->testRepository->findByTeacher($user->getTeacher());
+        }else if ($user && in_array('ROLE_STUDENT', $user->getRoles())){
+            $events = $this->eventRepository->findByEleve($user->getStudent());
+            $tests = $this->testRepository->findByEleve($user->getStudent());
+        }else{
+            $events = [];
+            $tests = [];
+        }
+        // $events = $this->eventRepository->findAll(); Si l'utilisateur est admin
+        $evenements = [];
+        foreach($events as $event){
+            $evenements[] = [
+                'id' => $event->getId(),
+                'start' => $event->getStartDatetime()->format('Y-m-d H:i:s'),
+                'end' => $event->getEndDatetime()->format('Y-m-d H:i:s'),
+                'title' => "Cours : ". $event->getTitle(),
+                'description' => $event->getDescription(),
+                'type' => "cours",
+                'color' => "#1367FB"
+            ];
+        }
+        foreach($tests as $test){
+            $evenements[] = [
+                'id' => $test->getId(),
+                'start' => $test->getStartDate()->format('Y-m-d H:i:s'),
+                'end' => $test->getEndDate()->format('Y-m-d H:i:s'),
+                'title' => "Evaluation : ". $test->getTitle(),
+                'description' => $test->getDescription(),
+                'type' => "test",
+                'color' => "#00CC66"
+            ];
+        }
+        $data = json_encode($evenements);
+        
+        return $this->render('admin/dashboard.html.twig', compact('data'));
     }
 
     public function configureAssets(): Assets
@@ -36,17 +100,20 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::section('Dashboard')->setPermission('');
-        yield MenuItem::linkToDashboard('Accueil', 'fa fa-home');
+        yield MenuItem::section('Dashboard')->setPermission('ROLE_USER');
+        yield MenuItem::linkToDashboard('Accueil', 'fa fa-home')->setPermission('ROLE_STUDENT');
+        yield MenuItem::linkToCrud('Profile', 'fas fa-user', User::class)->setPermission('ROLE_STUDENT');
+        yield MenuItem::linkToCrud('Demande de compte formatteur', 'fas fa-file-invoice', AskTeacherAccount::class)->setPermission('ROLE_ADMIN');
 
-        yield MenuItem::section('Gestion des formations')->setPermission('');
+        yield MenuItem::section('Gestion des formations')->setPermission('ROLE_STUDENT');
 
-        yield MenuItem::section('Gestion des étudiants')->setPermission('');
+        yield MenuItem::linkToCrud('Matière', 'fas fa-book', Module::class)->setPermission('ROLE_STUDENT');
+        yield MenuItem::linkToCrud('Cours', 'fas fa-book-open', Lesson::class)->setPermission('ROLE_TEACHER');
+        yield MenuItem::linkToCrud('Quizz', 'fas fa-spell-check', Test::class)->setPermission('ROLE_STUDENT');
 
-        yield MenuItem::section('Gestion des Organismes de formation')->setPermission('');
+        yield MenuItem::section('Gestion des étudiants')->setPermission('ROLE_TEACHER');
 
-        yield MenuItem::section('Mise à disposition des cours')->setPermission('');
-
-        yield MenuItem::section('Passation d\'examens en ligne')->setPermission('');
+        yield MenuItem::linkToCrud('Elève', 'fas fa-graduation-cap', Student::class)->setPermission('ROLE_TEACHER');
+        yield MenuItem::linkToCrud('Classe', 'fas fa-people-group', StudentGroup::class)->setPermission('ROLE_TEACHER');
     }
 }

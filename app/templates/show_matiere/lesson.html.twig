@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ShowMatiereController!{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto px-4">
+        <!-- Header section with title and toggle switch -->
+        <div class="flex justify-between items-center py-4 mb-5">
+            <h1 class="text-3xl font-bold">{{ title }}</h1>
+            <div class="flex items-center">
+                <span class="text-sm mr-2 font-medium text-gray-900 dark:text-gray-300">Cours</span>
+                <label for="toggle" class="inline-flex relative items-center cursor-pointer">
+                    <input type="checkbox" value="" id="toggle" class="select-none outline-none sr-only peer">
+                    <div class="select-none w-11 h-6 bg-gray-200 outline-none rounded-full peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                </label>
+                <span class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Ressources</span>
+            </div>
+
+        </div>
+
+        <!-- Description and teacher information section -->
+        <div class="mb-5">
+            {% if description %}
+                <p class="text-md text-gray-700 mb-1">Desription du cours : {{ description }}</p>
+            {% else %}
+                <p class="text-md text-gray-700 mb-1">Pas de description</p>
+            {% endif %}
+        </div>
+
+        <div class="content-area bg-gray-50 p-4 rounded-lg" id="contentArea">
+            <!-- Initial content -->
+            <div class="html-content">{{ content | raw }}</div>
+        </div>
+
+        <!-- This div will be toggled via JavaScript -->
+        <div id="resourceArea" class="hidden">
+            <!-- Check if files is not empty -->
+            {% if files is not empty %}
+                {% set filesArray = files[2:-2]|split('","') %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for file in filesArray %}
+                        <div class="block p-4 shadow-lg rounded-lg hover:bg-gray-100">
+                            <div class="flex justify-between items-center font-semibold">
+                                <span>
+                                    <a target="_blank" href="http://localhost:8000/uploads/files/{{ file }}" class="hover:text-blue-600">
+                                        <i class="fa fa-eye"></i> {{ file }}
+                                    </a>
+                                </span>
+                                <a href="http://localhost:8000/uploads/files/{{ file }}" download class="hover:text-blue-600">
+                                    <i class="fa fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- Display message if files is empty -->
+                <p class="text-gray-600">Aucune ressource pour ce cours</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('toggle').addEventListener('change', function() {
+            const contentArea = document.getElementById('contentArea');
+            const resourceArea = document.getElementById('resourceArea');
+            if (this.checked) {
+                contentArea.style.display = 'none';
+                resourceArea.style.display = 'block';
+            } else {
+                contentArea.style.display = 'block';
+                resourceArea.style.display = 'none';
+            }
+        });
+    </script>
+{% endblock %}

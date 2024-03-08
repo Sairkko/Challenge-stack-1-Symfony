@@ -1,3 +1,38 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+[type = 'submit'] {
+  background-color: #5368d5 !important;
+}
+
+.btn-secondary {
+  background-color: white !important;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.datagrid .dropdown-toggle.show, .datagrid .dropdown-toggle:active, .datagrid .dropdown-toggle:active:focus, .datagrid .dropdown-toggle:focus, .datagrid tr .dropdown-toggle.show, .datagrid tr:hover .dropdown-toggle.show, .datagrid tr:hover .dropdown-toggle:active, .datagrid tr:hover .dropdown-toggle:active:focus, .datagrid tr:hover .dropdown-toggle:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.datagrid tr:hover .dropdown-toggle:hover {
+  border-color: transparent;
+}
+
+.datagrid tr:not(.selected-row):hover .dropdown-toggle {
+  border-color: transparent;
+}
+
+.disabled-accordion {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.check-icon {
+  color: green;
+}
+

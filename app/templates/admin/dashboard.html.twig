@@ -5,6 +5,57 @@
 {% endblock%}
 
 {% block content %}
+    <div id="calendar"></div>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var centerToolbar = 'title'
+            {% if is_granted('ROLE_TEACHER') %}
+                centerToolbar = 'title addButton'
+            {% endif %}
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'fr',
+                initialView: 'dayGridMonth',
+                allDaySlot: false,
+                timeZone: 'Europe/Paris',
+                customButtons: {
+                    addButton: {
+                        color: "#00A759",
+                        text: 'Evenement +',
+                        click: function() {
+                            window.location.href = '/dashboard?crudAction=new&crudControllerFqcn=App%5CController%5CAdmin%5CEventCrudController';
+                        }
+                    }
+                },
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: centerToolbar,
+                    right: 'dayGridMonth,timeGridWeek'
+                },
+                buttonText: {
+                    today: 'Aujourd\'hui',
+                    month: 'Mois',
+                    week: 'Semaine',
+                    day: 'Jour'
+                },
+                events: {{data|raw}}
+            });
+
+            calendar.on('eventClick', (e) => {
+                if(e.event.extendedProps.type === "test"){
+                    window.location.href = "/quizz/" + e.event.id
+                }else{
+                    {% if is_granted('ROLE_TEACHER') %}
+                        window.location.href = "/dashboard?crudAction=edit&crudControllerFqcn=App%5CController%5CAdmin%5CEventCrudController&entityId=" + e.event.id
+                    {% endif %}
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
 
 {% endblock %}
 

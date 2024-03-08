@@ -3,12 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -25,8 +28,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string The hashed password
      */
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?string $password = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private $isVerified = false;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $profil_picture = null;
+
+    #[ORM\OneToOne(mappedBy: 'id_user', cascade: ['persist', 'remove'])]
+    private ?Teacher $teacher = null;
+
+    #[ORM\OneToOne(mappedBy: 'id_user', cascade: ['persist', 'remove'])]
+    private ?Student $student = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $token = null;
 
     public function getId(): ?int
     {
@@ -96,5 +113,75 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getTeacher(): ?Teacher
+    {
+        return $this->teacher;
+    }
+
+    public function setTeacher(Teacher $teacher): static
+    {
+        // set the owning side of the relation if necessary
+        if ($teacher->getIdUser() !== $this) {
+            $teacher->setIdUser($this);
+        }
+
+        $this->teacher = $teacher;
+
+        return $this;
+    }
+
+    public function getStudent(): ?Student
+    {
+        return $this->student;
+    }
+
+    public function setStudent(Student $student): static
+    {
+        // set the owning side of the relation if necessary
+        if ($student->getIdUser() !== $this) {
+            $student->setIdUser($this);
+        }
+
+        $this->student = $student;
+
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(?string $token): static
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    public function getProfilPicture(): ?string
+    {
+        return $this->profil_picture;
+    }
+
+    public function setProfilPicture(?string $profil_picture): static
+    {
+        $this->profil_picture = $profil_picture;
+
+        return $this;
     }
 }
