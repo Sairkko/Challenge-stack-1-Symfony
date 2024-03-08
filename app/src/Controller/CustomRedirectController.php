@@ -36,12 +36,17 @@ class CustomRedirectController extends AbstractController
         $questions = $test->getQuestions();
 
         // Préparer une structure pour stocker l'état de réponse pour chaque question
+        $isStudent = in_array('ROLE_STUDENT', $user->getRoles());
+
         $responsesStatus = [];
 
-        foreach ($questions as $question) {
-            // Remplacez $user->getId() par l'ID de l'étudiant, si $user représente un utilisateur et non un étudiant
-            $responseExists = $entityManager->getRepository(StudentReponse::class)->studentResponseExists($user->getStudent()->getId(), $question->getId());
-            $responsesStatus[$question->getId()] = $responseExists;
+        if ($isStudent) {
+            foreach ($questions as $question) {
+                // Remplacez $user->getStudent()->getId() par l'ID de l'étudiant, si $user représente un utilisateur et non un étudiant
+                // Assurez-vous que la méthode getStudent existe et est appropriée pour récupérer l'entité étudiant associée
+                $responseExists = $entityManager->getRepository(StudentReponse::class)->studentResponseExists($user->getStudent()->getId(), $question->getId());
+                $responsesStatus[$question->getId()] = $responseExists;
+            }
         }
 
 
