@@ -59,4 +59,11 @@ class CustomRedirectController extends AbstractController
             'role' => $user->getRoles()
         ]);
     }
+
+    #[Route('/end-quizz', name: 'end.quizz')]
+    public function endQuizz()
+    {
+        return $this->render('EvalMe/endQuizz.html.twig', [
+        ]);
+    }
 }
