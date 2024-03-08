@@ -116,12 +116,12 @@ class TestCrudController extends AbstractCrudController
             ;
         } else{
             $actions
-                ->add(Crud::PAGE_INDEX, $duplicateAction);
+                ->add(Crud::PAGE_INDEX, $duplicateAction)
+                ->add(Crud::PAGE_INDEX, $customAction2);
         }
 
 
         return $actions
-            ->add(Crud::PAGE_INDEX, $customAction2)
             ->add(Crud::PAGE_INDEX, $customAction);
     }
 

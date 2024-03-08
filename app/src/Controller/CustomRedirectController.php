@@ -4,6 +4,7 @@ namespace App\Controller;
 
 
 use App\Entity\StudentReponse;
+use App\Repository\StudentRepository;
 use App\Repository\TestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -74,19 +75,42 @@ class CustomRedirectController extends AbstractController
         $description = $test->getDescription();
 
         $questions = $test->getQuestions();
+        $questionIds = [];
+        foreach($questions as $question){
+            $questionIds[] = $question->getId();
+        }
         $groups = $test->getGroups();
         $students = [];
         foreach($groups as $group){
             foreach($group->getStudents() as $student){
-                $allStudentsReponses = $student->getStudentReponses();
-                $thisTestReponses = array_filter($allStudentsReponses, function($reponse) use ($questions) {
-                    return in_array($reponse->getQuestion(), $questions);
+                $allStudentsReponses = $student->getStudentResponses();
+
+                $thisTestReponses = $allStudentsReponses->filter(function($reponse) use ($questionIds) {
+                    return in_array($reponse->getIdQuestion()->getId(), $questionIds);
+                });
+
+                $correctionPercentage = 0;
+                if($thisTestReponses->count() != 0){
+                    $totalResponsesCount = $thisTestReponses->count();
+                    if ($totalResponsesCount > 0) {
+                        $notTotoResponsesCount = $thisTestReponses->filter(function($response) {
+                        return $response->getIsCorrectByTeacher() !== 'null';
+                    })->count();
+
+                $correctionPercentage = round($notTotoResponsesCount / $totalResponsesCount * 100);
+            } else {
+                $correctionPercentage = 0; 
+            }
+
+                }
                 $students[] = [
                     'id' => $student->getId(),
                     'nom' => $student->getName(),
                     'prenom' => $student->getLastName(),
                     'picture' => $student->getIdUser()->getProfilPicture(),
-                    'reponses' => count($thisTestReponses)
+                    'reponses' => count($thisTestReponses),
+                    'correctionPercentage' => $correctionPercentage,
+                    'totalPoints' => 0
                 ];
             }
         }
@@ -101,5 +125,47 @@ class CustomRedirectController extends AbstractController
             'questions' => $questions,
             'students' => $students
         ]);
+    }
+
+    #[Route('/test/answers/{testId}/student/{studentId}', name: 'student_answers_page')]
+    public function studentAnswers(int $testId, int $studentId, TestRepository $testRepository, StudentRepository $studentRepository): Response
+    {
+        $test = $testRepository->find($testId);
+        $student = $studentRepository->find($studentId);
+
+        if (!$test) {
+            throw $this->createNotFoundException('Le Test demandée n\'existe pas');
+        }
+        
+        $title = $test->getTitle();
+        $description = $test->getDescription();
+        $allStudentsReponses = $student->getStudentResponses();
+        $questions = $test->getQuestions();
+        $data = [
+            'id' => $test->getId(),
+            'title' => $title,
+            'description' => $description,
+            'questions' => []
+        ];
+        foreach($questions as $question){
+            $studentReponse = $allStudentsReponses->filter(function($reponse) use ($question) {return $reponse->getIdQuestion() === $question;})[0];
+            $studentReponseValue = null;
+            if($studentReponse !== null){
+                $studentReponseValue = ['value' => $studentReponse->getValue()];
+            }
+            
+            $el = [];
+            $el[] = $studentReponseValue;
+            $data['questions'][] = [
+                'id'=> $question->getId(),
+                'question' => $question,
+                'questionReponses' => $question->getQuestionReponses(),
+                'studentReponse' => $studentReponseValue,
+                'is_validated' => true
+            ];
+        }
+        dd($el);
+        
+        return $this->render('EvalMe/studentAnswers.html.twig', $data);
     }
 }
